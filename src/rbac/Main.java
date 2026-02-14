@@ -20,14 +20,14 @@ public class Main {
 
 //        ==============================================================================
 
-        List<Permission> listPerm = List.of(
-            new Permission("wrITE", "report", "other test text for premission"),
-            new Permission("READ", "report", "222"),
-//            new Permission("read", "report", ""),
-//            new Permission("read", "report 2", "dfdf"),
-            new Permission("read", "users", "other test text for premission"),
-            new Permission("read", "report", "test")
-        );
+//        List<Permission> listPerm = List.of(
+//            new Permission("wrITE", "report", "other test text for premission"),
+//            new Permission("READ", "report", "222"),
+////            new Permission("read", "report", ""),
+////            new Permission("read", "report 2", "dfdf"),
+//            new Permission("read", "users", "other test text for premission"),
+//            new Permission("read", "report", "test")
+//        );
 //
 //        for(Permission value : listPerm){
 //            System.out.println(value.format());
@@ -58,14 +58,33 @@ public class Main {
 
 //        ===========================================================================================
 
-        AssignmentMetadata metData1 = AssignmentMetadata.now("User1", null);
-        System.out.println(metData1.format());
-
-        AssignmentMetadata metData2 = AssignmentMetadata.now("User1", "Important reason");
-        System.out.println(metData2.format());
+//        AssignmentMetadata metData1 = AssignmentMetadata.now("User1", null);
+//        System.out.println(metData1.format());
+//
+//        AssignmentMetadata metData2 = AssignmentMetadata.now("User1", "Important reason");
+//        System.out.println(metData2.format());
 
 //        AssignmentMetadata metData3 = AssignmentMetadata.now(null, "Important reason");
 //        System.out.println(metData3.format());
 
+//        ===================================================
+
+        User user = User.validate("test1", "Testor First", "test@mail.ru");
+
+        Set<Permission> permissions = new HashSet<>();
+        permissions.add(new Permission("READ", "testers", "Read users"));
+        permissions.add(new Permission("ReaD", "testers", "Read users"));
+        permissions.add(new Permission("Write", "report", "other text"));
+        permissions.add(new Permission("READ", "tester", "text read"));
+        Role role = new Role("admin2", "Description for admin", permissions);
+
+        AssignmentMetadata metData = AssignmentMetadata.now("ADMIN", "Important reason");
+
+        PermanentAssignment assignment = new PermanentAssignment(user, role, metData);
+        System.out.println(assignment.summary());
+
+        PermanentAssignment assignment2 = new PermanentAssignment(user, role, metData);
+        assignment2.revoke();
+        System.out.println(assignment2.summary());
     }
 }
