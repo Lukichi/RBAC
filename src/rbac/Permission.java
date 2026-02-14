@@ -1,0 +1,50 @@
+package rbac;
+
+import java.util.Locale;
+import java.util.regex.Pattern;
+
+public record Permission(String name, String resource, String description) {
+
+    private static final Pattern NAME_PATTERN = Pattern.compile("^[A-Z]+$");
+    private static final Pattern RES_PATTERN = Pattern.compile("^[a-z]+$");
+
+    public Permission (String name, String resource, String description){
+        String goodName, goodResource;
+
+        if (name == null)
+            throw new IllegalArgumentException("Invalid name format. Name  not be empty");
+        else
+            goodName = name.toUpperCase();
+        if (!NAME_PATTERN.matcher(goodName).matches())
+            throw new IllegalArgumentException("Invalid name format. Name must contain only letters and not be empty");
+
+        if (resource == null)
+            throw new IllegalArgumentException("Invalid resource format. Resource not be empty");
+        else
+            goodResource = resource.toLowerCase();
+        if (!RES_PATTERN.matcher(goodResource).matches())
+            throw new IllegalArgumentException("Invalid resource format. resource must contain only letters");
+
+        if (description == null || description.isEmpty())
+            throw new IllegalArgumentException("Invalid description format. Description not be empty");
+
+        this.name = goodName;
+        this.resource = goodResource;
+        this.description = description;
+    }
+
+    String format(){
+        return String.format("%s on %s: %s", name, resource, description);
+    }
+
+    boolean matches(String namePattern, String resourcePattern){
+        if (namePattern == null || resourcePattern == null)
+            return false;
+
+        boolean flag1 = this.name.contains(namePattern.toUpperCase());
+        boolean flag2 = this.resource.contains(resourcePattern);
+
+        return flag1 && flag2;
+    }
+
+}
