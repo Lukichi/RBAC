@@ -1,7 +1,10 @@
 package rbac;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class Main {
     public static void main(){
@@ -25,12 +28,44 @@ public class Main {
             new Permission("read", "users", "other test text for premission"),
             new Permission("read", "report", "test")
         );
+//
+//        for(Permission value : listPerm){
+//            System.out.println(value.format());
+//            if (value.matches("rEAd", "report"))
+//                System.out.println("    HAVE TEST COMPLITE");
+//        }
 
-        for(Permission value : listPerm){
-            System.out.println(value.format());
-            if (value.matches("rEAd", "report"))
-                System.out.println("    HAVE TEST COMPLITE");
-        }
+//        =============================================================================
+
+//        Permission help1 = new Permission("READ", "users", "Read users");
+//        Permission help2 = new Permission("WRITE", "users", "Write users");
+//
+//        Role role1 = new Role("admin", "Description for admin");
+//        role1.addPermission(help1);
+//        role1.addPermission(help2);
+//
+//        System.out.println(role1.toString());
+//
+//        Set<Permission> permissions = new HashSet<>();
+//        permissions.add(new Permission("READ", "testers", "Read users"));
+//        permissions.add(new Permission("ReaD", "testers", "Read users"));
+//        permissions.add(new Permission("Write", "report", "other text"));
+//        permissions.add(new Permission("READ", "tester", "text read"));
+//
+//        Role role2 = new Role("admin2", "Description for admin", permissions);
+//
+//        System.out.println(role2.toString());
+
+//        ===========================================================================================
+
+        AssignmentMetadata metData1 = AssignmentMetadata.now("User1", null);
+        System.out.println(metData1.format());
+
+        AssignmentMetadata metData2 = AssignmentMetadata.now("User1", "Important reason");
+        System.out.println(metData2.format());
+
+//        AssignmentMetadata metData3 = AssignmentMetadata.now(null, "Important reason");
+//        System.out.println(metData3.format());
 
     }
 }
