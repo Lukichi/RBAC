@@ -11,14 +11,14 @@ public record Permission(String name, String resource, String description) {
     public Permission (String name, String resource, String description){
         String goodName, goodResource;
 
-        if (name == null)
+        if (name == null || name.isEmpty())
             throw new IllegalArgumentException("Invalid name format. Name  not be empty");
         else
             goodName = name.toUpperCase();
         if (!NAME_PATTERN.matcher(goodName).matches())
             throw new IllegalArgumentException("Invalid name format. Name must contain only letters and not be empty");
 
-        if (resource == null)
+        if (resource == null || resource.isEmpty())
             throw new IllegalArgumentException("Invalid resource format. Resource not be empty");
         else
             goodResource = resource.toLowerCase();

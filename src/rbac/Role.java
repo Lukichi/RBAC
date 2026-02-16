@@ -16,6 +16,12 @@ public class Role {
     }
 
     public Role (String name, String description, Set<Permission> permissions){
+        if (name == null || name.isEmpty())
+            throw new IllegalArgumentException("Name not be empty or null");
+        if (description == null || description.isEmpty())
+            throw new IllegalArgumentException("Description not be empty or null");
+
+
         this.id = "role_" + UUID.randomUUID().toString();
         this.name = name;
         this.description = description;

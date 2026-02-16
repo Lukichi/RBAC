@@ -22,7 +22,7 @@ public class TemporaryAssignment extends  AbstractRoleAssignment{
 
         super(user, role, metadata);
 
-        if (expiresAt == null || expiresAt.isBlank()) {
+        if (expiresAt == null || expiresAt.isEmpty()) {
             throw new IllegalArgumentException("ExpiresAt cannot be null or empty");
         }
 

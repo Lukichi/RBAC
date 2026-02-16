@@ -10,11 +10,11 @@ public record User(String username, String fullName, String email) {
     private static final Pattern EM_PATTER = Pattern.compile("^[^@]+@[^@]+\\.[^@]+$");
 
     public static User validate(String username, String fullName, String email){
-        if (username == null)
+        if (username == null || username.isEmpty())
             throw new IllegalArgumentException("Username not be empty");
-        if (fullName == null)
+        if (fullName == null || fullName.isEmpty())
             throw new IllegalArgumentException("Full name not be empty");
-        if (email == null)
+        if (email == null || email.isEmpty())
             throw new IllegalArgumentException("Email not be empty");
 
         if (!UN_PATTER.matcher((username)).matches())
