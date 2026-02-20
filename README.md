@@ -29,21 +29,29 @@
 + endsWith - содержание подстроки в конце
 + equals - содержание (полностью и только)
 + contains - содержание (наличие)
++ anyMatch - имеет ли хоть один
 
 <h2>JUnit</h2>
 + Статьи:
   + https://habr.com/ru/articles/590607/
 + Методы:
   + assertEquals - сравнивает 2 списка, элемента (числа и тд)
+  + Nested - пометки иерархии (обязательно)
 
 <h2>2.1. Фильтрация пользователей</h2>
 + UserFilter - для фильтра
   + boolean test(User user) - проверка условия
   + UserFilter and(UserFilter other) - объединяет 2 теста через И
   + UserFilter or(UserFilter other) - объединяет 2 теста чарез ИЛИ
-+ UserFilters - условия
++ UserFilters - фильтр пользователей
   + UserFilter byUsername(String username) - проверка ника
   + UserFilter byUsernameContains(String substring) - содержание подстроки в нике
   + UserFilter byEmail(String email)  - проверка почты
   + UserFilter byEmailDomain(String domain)  - проверка домена (собака + прочее: @company.com)
   + UserFilter byFullNameContains(String substring)  - ФИО содержит часть
++ RoleFilters - фильтр ролей
+  + RoleFilter byName(String name) - проверка названия
+  + RoleFilter byNameContains(String substring) - фильтрация по название (содержит подстроку)
+  + RoleFilter hasPermission(Permission permission) - фильтрация прав доступа по объекту
+  + RoleFilter hasPermission(String permissionName, String resource) - фильтрация прав доступа по названию и русерсу
+  + RoleFilter hasAtLeastNPermissions(int n) - допускается от >= n прав доступа
