@@ -25,3 +25,25 @@
 
 <h1>Подзадача 2: Фильтры</h1>
 
+<h2>Пометки</h2>
++ endsWith - содержание подстроки в конце
++ equals - содержание (полностью и только)
++ contains - содержание (наличие)
+
+<h2>JUnit</h2>
++ Статьи:
+  + https://habr.com/ru/articles/590607/
++ Методы:
+  + assertEquals - сравнивает 2 списка, элемента (числа и тд)
+
+<h2>2.1. Фильтрация пользователей</h2>
++ UserFilter - для фильтра
+  + boolean test(User user) - проверка условия
+  + UserFilter and(UserFilter other) - объединяет 2 теста через И
+  + UserFilter or(UserFilter other) - объединяет 2 теста чарез ИЛИ
++ UserFilters - условия
+  + UserFilter byUsername(String username) - проверка ника
+  + UserFilter byUsernameContains(String substring) - содержание подстроки в нике
+  + UserFilter byEmail(String email)  - проверка почты
+  + UserFilter byEmailDomain(String domain)  - проверка домена (собака + прочее: @company.com)
+  + UserFilter byFullNameContains(String substring)  - ФИО содержит часть
