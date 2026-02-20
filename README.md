@@ -55,3 +55,14 @@
   + RoleFilter hasPermission(Permission permission) - фильтрация прав доступа по объекту
   + RoleFilter hasPermission(String permissionName, String resource) - фильтрация прав доступа по названию и русерсу
   + RoleFilter hasAtLeastNPermissions(int n) - допускается от >= n прав доступа
++ AssignmentFilter - фильтр мета-данных
+  + AssignmentFilter byUser(User user) — назначения для конкретного пользователя
+  + AssignmentFilter byUsername(String username) - соответствие ника пользователя
+  + AssignmentFilter byRole(Role role) — назначения конкретной роли
+  + AssignmentFilter byRoleName(String roleName) - соответствие роли пользователя
+  + AssignmentFilter activeOnly() — только активные назначения
+  + AssignmentFilter inactiveOnly() — только неактивные
+  + AssignmentFilter byType(String type) — "PERMANENT" или "TEMPORARY"
+  + AssignmentFilter assignedBy(String username) — кто назначил
+  + AssignmentFilter assignedAfter(String date) — назначенные после даты
+  + AssignmentFilter expiringBefore(String date) — временные назначения, истекающие до даты
