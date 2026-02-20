@@ -23,3 +23,5 @@
 + https://wiki.rakovets.by/java/core/date-and-time/#_%D0%B4%D0%B0%D1%82%D0%B0_%D0%B8_%D0%B2%D1%80%D0%B5%D0%BC%D1%8F_since_version_8
 
 
+<h1>Подзадача 2: Фильтры</h1>
+
