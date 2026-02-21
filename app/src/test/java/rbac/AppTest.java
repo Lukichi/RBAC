@@ -10,10 +10,12 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
 class AppTest {
@@ -582,6 +584,106 @@ class AppTest {
 
             assertEquals(result, sortedUsers, "Записи должны совпадать");
         }
-
     }
+
+    @Nested
+    class testManagers{
+
+        @Test
+        void testUserManager(){
+            UserManager usersManager = new UserManager();
+            usersManager.add(users.get(0));
+            assertThrows(IllegalArgumentException.class, () -> {
+                usersManager.add(users.get(0));
+            });
+            usersManager.add(users.get(1));
+            usersManager.add(users.get(2));
+            usersManager.add(users.get(3));
+            usersManager.add(users.get(4));
+
+            assertEquals(5, usersManager.count(), "Размеры должны совпадать");
+
+            Optional<User> resultFindOne = Optional.of(users.get(0));
+            Optional<User> resultFindOneManager = usersManager.findByUsername("admin");
+            assertEquals(resultFindOne, resultFindOneManager);
+
+            boolean resultExistsManager = usersManager.exists("guest");
+            assertEquals(true, resultExistsManager);
+
+            usersManager.update("SERGEY", "", "super-sergey@mail.ru");
+            List<User> resultUpdateData = List.of(
+                    new User("admin2", "Второй Админ", "john@gmail.com"),
+                    new User("admin", "Главный Админ", "admin@company.com"),
+                    new User("guest", "Гость", "guest@mail.ru"),
+                    new User("maria", "Марина Семеновна", "maria@company.com"),
+                    new User("SERGEY", "Сергей Сергеевич", "super-sergey@mail.ru")
+            );
+            List<User> resultUpdateManager = usersManager.findAll(null, UserSorters.byFullName());
+
+            UserManager userManager2 = new UserManager();
+            for (User value : resultUpdateData)
+                userManager2.add(value);
+            assertEquals(true, usersManager.equals(userManager2));
+
+            usersManager.remove(resultUpdateData.get(0));
+            assertEquals(resultUpdateData, resultUpdateManager);
+
+            usersManager.remove(resultUpdateData.get(0));
+            assertEquals(4, usersManager.count(), "Размеры должны совпадать");
+
+
+        }
+
+        @Test
+        void testRoleManager(){
+            RoleManager roleManager = new RoleManager();
+            roleManager.add(roles.get(0));
+            roleManager.add(roles.get(1));
+            roleManager.add(roles.get(2));
+            roleManager.add(roles.get(3));
+
+            roleManager.addPermissionToRole("guest", permissions.get(0));
+            Optional<Role> resultFindOne = Optional.of(roles.get(3));
+            Optional<Role> resultFindOneManager = roleManager.findByName("guest");
+            assertEquals(resultFindOne, resultFindOneManager);
+
+            List<Role> roleList = roleManager.findRolesWithPermission("read", "REport");  // порядок обратный (обратный по отношению к добавлению ролей)
+            List<Role> result = List.of(roles.get(1), roles.get(0));
+
+            for (Role value : result)
+                System.out.println(value.toString());
+
+            assertEquals(result.size(), roleList.size(), "Размеры должны совпадать");
+            assertEquals(result, roleList);
+        }
+    }
+
+    @Test
+    void testAssigmentsManager() {
+        AssignmentManager assignmentManager = new AssignmentManager();
+        assignmentManager.add(assignmentList.get(0));
+        assignmentManager.add(assignmentList.get(1));
+        assignmentManager.add(assignmentList.get(2));
+        assignmentManager.add(assignmentList.get(3));
+        assignmentManager.add(assignmentList.get(4));
+
+        List<RoleAssignment> activeManager = assignmentManager.getActiveAssignments(); // сортируем по нику, иначе порядок рандомный
+        List<RoleAssignment> activeResult = List.of(assignmentList.get(0), assignmentList.get(3), assignmentList.get(2));
+        assertEquals(activeResult.size(), activeManager.size(), "Размеры должны совпадать");
+        assertEquals(activeResult, activeManager);
+
+        // на примере temp1, должна быть правда
+        boolean hasRoleManager = assignmentManager.userHasRole(users.get(2), roles.get(2));
+        assertEquals(true, hasRoleManager);
+
+        // на примере temp1, должна быть правда
+        boolean hasPermissoinsManager = assignmentManager.userHasPermission(users.get(2), permissions.get(3).name(), permissions.get(3).resource());
+        assertEquals(true, hasPermissoinsManager);
+
+        Set<Permission> getPirmisionsManager = assignmentManager.getUserPermissions(users.get(2));
+        Set<Permission> getPirmisionsResult = new HashSet<>();
+        getPirmisionsResult.add(permissions.get(3));
+        assertEquals(getPirmisionsResult, getPirmisionsManager);
+    }
+
 }

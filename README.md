@@ -37,6 +37,7 @@
 + Методы:
   + assertEquals - сравнивает 2 списка, элемента (числа и тд)
   + Nested - пометки иерархии (обязательно)
+  + assertThrows - проверяет, что код выдает исключение
 
 <h2>2.1. Фильтрация пользователей</h2>
 + UserFilter - для фильтра
@@ -73,4 +74,52 @@
     + Comparator.comparing - создание компаратора (инструкции для сортировки, котрый отвечает элемент больше, равен или меньше другого), в параметрах *поле для сравнения* + *признак*
     + String.CASE_INSENSITIVE_ORDER - 2 параметр (признак), сравнение без учета регистра
     + comparingInt - сравнивает числа (есть и с плавающей точкой)
-+ 
+
+
+<h1>Подзадача 3: Менеджеры данных</h1>
+
+<h2>Optional</h2>
++ https://wiki.rakovets.by/java/core/lambda-expressions/#_%D0%BA%D0%BB%D0%B0%D1%81%D1%81_optional
++ https://javarush.com/groups/posts/3941-kofe-breyk-161-kak-obrabatihvatjh-null-v-java-s-pomojshjhju-optional
++ Optional.ofNullable - если значение null, то само обработает
+
+<h2>3.1. Интерфейс репозитория</h2>
++ Repository<T> - общий интерфейс для работы с менеджерами (классами, хранящими данные)
+  + void add(T item) - добавлять
+  + boolean remove(T item) - удалять
+  + Optional<T> findById(String id) - искать
+  + List<T> findAll() - вернуть все
+  + int count() - сколько
+  + void clear() - очистить
+
+<h2>3.2. Менеджер пользователей</h2>
++ UserManager - класс для хранения данных пользователя
+    + переопределяет методы из интерфейса
+    + Optional<User> findByUsername(String username) - ищет по нику
+    + Optional<User> findByEmail(String email) - ищет по почте
+    + List<User> findByFilter(UserFilter filter) - ищет по фильтру
+    + List<User> findAll(UserFilter filter, Comparator<User> sorter) (filter — что искать, sorter — в каком порядке вернуть)
+    + boolean exists(String username) - проверяет существование
+    + void update(String username, String newFullName, String newEmail) — обновить данные пользователя
++ RoleManager - класс для хранения данных ролей
+  + переопределённые методы из интерфейса
+  + Optional<Role> findByName(String name) - ищет по названию
+  + List<Role> findByFilter(RoleFilter filter) - фильтрует
+  + List<Role> findAll(RoleFilter filter, Comparator<Role> sorter) (filter — что искать, sorter — в каком порядке вернуть)
+  + boolean exists(String name) - проверяет наличие
+  + void addPermissionToRole(String roleName, Permission permission) - добавляет разрешения
+  + void removePermissionFromRole(String roleName, Permission permission) - удаляет разрешения
+  + List<Role> findRolesWithPermission(String permissionName, String resource) - ищет по названию и ресурсам, порядок обратный (обратный по отношению к добавлению ролей)
++ AssignmentManager -класс для хранения данных назначения
+  + переопределяет методы из интерфейса
+  + List<RoleAssignment> findByUser(User user) - найти по пользователю
+  + List<RoleAssignment> findByRole(Role role) - найти по роли
+  + List<RoleAssignment> findByFilter(AssignmentFilter filter) - найти по фильрам
+  + List<RoleAssignment> findAll(AssignmentFilter filter, Comparator<RoleAssignment> sorter) (filter — что искать, sorter — в каком порядке вернуть) - найти и отсортировать
+  + List<RoleAssignment> getActiveAssignments() - получить активных, сортируем по нику, иначе порядок рандомный
+  + List<RoleAssignment> getExpiredAssignments() - получить неактивных, сортируем по нику, иначе порядок рандомный
+  + boolean userHasRole(User user, Role role) - проверить роль у пользователя
+  + boolean userHasPermission(User user, String permissionName, String resource) - проверить права доступа
+  + Set<Permission> getUserPermissions(User user) — все права пользователя из всех его ролей
+  + void revokeAssignment(String assignmentId) - убрать право доступа
+  + void extendTemporaryAssignment(String assignmentId, String newExpirationDate) - продлит пользователю права до даты
