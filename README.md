@@ -101,3 +101,25 @@
     + List<User> findAll(UserFilter filter, Comparator<User> sorter) (filter — что искать, sorter — в каком порядке вернуть)
     + boolean exists(String username) - проверяет существование
     + void update(String username, String newFullName, String newEmail) — обновить данные пользователя
++ RoleManager - класс для хранения данных ролей
+  + переопределённые методы из интерфейса
+  + Optional<Role> findByName(String name) - ищет по названию
+  + List<Role> findByFilter(RoleFilter filter) - фильтрует
+  + List<Role> findAll(RoleFilter filter, Comparator<Role> sorter) (filter — что искать, sorter — в каком порядке вернуть)
+  + boolean exists(String name) - проверяет наличие
+  + void addPermissionToRole(String roleName, Permission permission) - добавляет разрешения
+  + void removePermissionFromRole(String roleName, Permission permission) - удаляет разрешения
+  + List<Role> findRolesWithPermission(String permissionName, String resource) - ищет по названию и ресурсам, порядок обратный (обратный по отношению к добавлению ролей)
++ AssignmentManager -класс для хранения данных назначения
+  + переопределяет методы из интерфейса
+  + List<RoleAssignment> findByUser(User user) - найти по пользователю
+  + List<RoleAssignment> findByRole(Role role) - найти по роли
+  + List<RoleAssignment> findByFilter(AssignmentFilter filter) - найти по фильрам
+  + List<RoleAssignment> findAll(AssignmentFilter filter, Comparator<RoleAssignment> sorter) (filter — что искать, sorter — в каком порядке вернуть) - найти и отсортировать
+  + List<RoleAssignment> getActiveAssignments() - получить активных, сортируем по нику, иначе порядок рандомный
+  + List<RoleAssignment> getExpiredAssignments() - получить неактивных, сортируем по нику, иначе порядок рандомный
+  + boolean userHasRole(User user, Role role) - проверить роль у пользователя
+  + boolean userHasPermission(User user, String permissionName, String resource) - проверить права доступа
+  + Set<Permission> getUserPermissions(User user) — все права пользователя из всех его ролей
+  + void revokeAssignment(String assignmentId) - убрать право доступа
+  + void extendTemporaryAssignment(String assignmentId, String newExpirationDate) - продлит пользователю права до даты
