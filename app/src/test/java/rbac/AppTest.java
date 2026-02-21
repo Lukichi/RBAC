@@ -634,20 +634,6 @@ class AppTest {
 
         }
 
-//        permissions = List.of(
-//                new Permission("READ", "testers", "Read users1"),
-//                new Permission("ReaD", "report", "Read users2"),
-//                new Permission("Write", "report", "other text"),
-//                new Permission("READ", "user", "text read")
-//        );
-//
-//        roles = List.of(
-//                new Role("admin", "Administrator", Set.of(permissions.get(0), permissions.get(1), permissions.get(2), permissions.get(3))),
-//                new Role("admin-reporter", "Reporter",  Set.of(permissions.get(1), permissions.get(2))),
-//                new Role("user", "User", Set.of(permissions.get(3))),
-//                new Role("guest", "Guest", Set.of())
-//                );
-
         @Test
         void testRoleManager(){
             RoleManager roleManager = new RoleManager();
@@ -672,20 +658,32 @@ class AppTest {
         }
     }
 
-//    AssignmentMetadata metData = AssignmentMetadata.now("ADMIN", "Important reason");
-//    AssignmentMetadata metData2 = AssignmentMetadata.now("admin-report", "Important reason");
-//    DateTimeFormatter dataFormat = DateTimeFormatter.ofPattern("yyyy MM dd HH:mm:ss");
-//    TemporaryAssignment temp1 = new TemporaryAssignment(users.get(2), roles.get(2), new AssignmentMetadata("ADMIN", LocalDateTime.now().plusHours(3).format(dataFormat), "Important reason"));
-//        temp1.extend(LocalDateTime.now().plusHours(3).format(dataFormat));
-//    TemporaryAssignment temp2 = new TemporaryAssignment(users.get(3), roles.get(2), new AssignmentMetadata("admin-report", LocalDateTime.now().plusHours(1).format(dataFormat), "Important reason"));
-//        temp2.extend(LocalDateTime.now().plusHours(1).format(dataFormat));
-//    assignmentList = List.of(
-//            new PermanentAssignment(users.get(0), roles.get(0), metData),   // admin
-//            new TemporaryAssignment(users.get(1), roles.get(1), metData),   // admin-report
-//    temp1,   // user
-//    temp2,  // user
-//            new TemporaryAssignment(users.get(4), roles.get(3), metData2)   // guest
-//            );
+    @Test
+    void testAssigmentsManager() {
+        AssignmentManager assignmentManager = new AssignmentManager();
+        assignmentManager.add(assignmentList.get(0));
+        assignmentManager.add(assignmentList.get(1));
+        assignmentManager.add(assignmentList.get(2));
+        assignmentManager.add(assignmentList.get(3));
+        assignmentManager.add(assignmentList.get(4));
 
+        List<RoleAssignment> activeManager = assignmentManager.getActiveAssignments(); // сортируем по нику, иначе порядок рандомный
+        List<RoleAssignment> activeResult = List.of(assignmentList.get(0), assignmentList.get(3), assignmentList.get(2));
+        assertEquals(activeResult.size(), activeManager.size(), "Размеры должны совпадать");
+        assertEquals(activeResult, activeManager);
+
+        // на примере temp1, должна быть правда
+        boolean hasRoleManager = assignmentManager.userHasRole(users.get(2), roles.get(2));
+        assertEquals(true, hasRoleManager);
+
+        // на примере temp1, должна быть правда
+        boolean hasPermissoinsManager = assignmentManager.userHasPermission(users.get(2), permissions.get(3).name(), permissions.get(3).resource());
+        assertEquals(true, hasPermissoinsManager);
+
+        Set<Permission> getPirmisionsManager = assignmentManager.getUserPermissions(users.get(2));
+        Set<Permission> getPirmisionsResult = new HashSet<>();
+        getPirmisionsResult.add(permissions.get(3));
+        assertEquals(getPirmisionsResult, getPirmisionsManager);
+    }
 
 }
