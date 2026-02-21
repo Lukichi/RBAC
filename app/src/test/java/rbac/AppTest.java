@@ -10,10 +10,12 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
 class AppTest {
@@ -581,6 +583,55 @@ class AppTest {
             }
 
             assertEquals(result, sortedUsers, "Записи должны совпадать");
+        }
+    }
+
+    @Nested
+    class testManagers{
+
+        @Test
+        void testUserManager(){
+            UserManager usersManager = new UserManager();
+            usersManager.add(users.get(0));
+            assertThrows(IllegalArgumentException.class, () -> {
+                usersManager.add(users.get(0));
+            });
+            usersManager.add(users.get(1));
+            usersManager.add(users.get(2));
+            usersManager.add(users.get(3));
+            usersManager.add(users.get(4));
+
+            assertEquals(5, usersManager.count(), "Размеры должны совпадать");
+
+            Optional<User> resultFindOne = Optional.of(users.get(0));
+            Optional<User> resultFindOneManager = usersManager.findByUsername("admin");
+            assertEquals(resultFindOne, resultFindOneManager);
+
+            boolean resultExistsManager = usersManager.exists("guest");
+            assertEquals(true, resultExistsManager);
+
+            usersManager.update("SERGEY", "", "super-sergey@mail.ru");
+            List<User> resultUpdateData = List.of(
+                    new User("admin2", "Второй Админ", "john@gmail.com"),
+                    new User("admin", "Главный Админ", "admin@company.com"),
+                    new User("guest", "Гость", "guest@mail.ru"),
+                    new User("maria", "Марина Семеновна", "maria@company.com"),
+                    new User("SERGEY", "Сергей Сергеевич", "super-sergey@mail.ru")
+            );
+            List<User> resultUpdateManager = usersManager.findAll(null, UserSorters.byFullName());
+
+            UserManager userManager2 = new UserManager();
+            for (User value : resultUpdateData)
+                userManager2.add(value);
+            assertEquals(true, usersManager.equals(userManager2));
+
+            usersManager.remove(resultUpdateData.get(0));
+            assertEquals(resultUpdateData, resultUpdateManager);
+
+            usersManager.remove(resultUpdateData.get(0));
+            assertEquals(4, usersManager.count(), "Размеры должны совпадать");
+
+
         }
 
     }
