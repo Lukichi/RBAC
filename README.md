@@ -37,6 +37,7 @@
 + Методы:
   + assertEquals - сравнивает 2 списка, элемента (числа и тд)
   + Nested - пометки иерархии (обязательно)
+  + assertThrows - проверяет, что код выдает исключение
 
 <h2>2.1. Фильтрация пользователей</h2>
 + UserFilter - для фильтра
@@ -76,3 +77,27 @@
 
 
 <h1>Подзадача 3: Менеджеры данных</h1>
+
+<h2>Optional</h2>
++ https://wiki.rakovets.by/java/core/lambda-expressions/#_%D0%BA%D0%BB%D0%B0%D1%81%D1%81_optional
++ https://javarush.com/groups/posts/3941-kofe-breyk-161-kak-obrabatihvatjh-null-v-java-s-pomojshjhju-optional
++ Optional.ofNullable - если значение null, то само обработает
+
+<h2>3.1. Интерфейс репозитория</h2>
++ Repository<T> - общий интерфейс для работы с менеджерами (классами, хранящими данные)
+  + void add(T item) - добавлять
+  + boolean remove(T item) - удалять
+  + Optional<T> findById(String id) - искать
+  + List<T> findAll() - вернуть все
+  + int count() - сколько
+  + void clear() - очистить
+
+<h2>3.2. Менеджер пользователей</h2>
++ UserManager - класс для хранения данных пользователя
+    + переопределяет методы из интерфейса
+    + Optional<User> findByUsername(String username) - ищет по нику
+    + Optional<User> findByEmail(String email) - ищет по почте
+    + List<User> findByFilter(UserFilter filter) - ищет по фильтру
+    + List<User> findAll(UserFilter filter, Comparator<User> sorter) (filter — что искать, sorter — в каком порядке вернуть)
+    + boolean exists(String username) - проверяет существование
+    + void update(String username, String newFullName, String newEmail) — обновить данные пользователя
