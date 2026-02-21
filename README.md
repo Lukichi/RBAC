@@ -66,3 +66,11 @@
   + AssignmentFilter assignedBy(String username) — кто назначил
   + AssignmentFilter assignedAfter(String date) — назначенные после даты
   + AssignmentFilter expiringBefore(String date) — временные назначения, истекающие до даты
+
+<h2>2.4 Сортировка</h2>
++ Comparator
+    + https://wiki.rakovets.by/java/core/java-collection-framework/#_interface_comparable_and_comparator
+    + Comparator.comparing - создание компаратора (инструкции для сортировки, котрый отвечает элемент больше, равен или меньше другого), в параметрах *поле для сравнения* + *признак*
+    + String.CASE_INSENSITIVE_ORDER - 2 параметр (признак), сравнение без учета регистра
+    + comparingInt - сравнивает числа (есть и с плавающей точкой)
++ 

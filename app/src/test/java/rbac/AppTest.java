@@ -11,6 +11,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -417,6 +418,169 @@ class AppTest {
             assertEquals(result, resultFilter, "Записи должны совпадать");
 
             System.out.println("Тест фильтрации по времени назначения пройден");
+        }
+    }
+
+    @Nested
+    class sortTests{
+
+        @Test
+        void sortUserByUsername(){
+            List<User> sortedUsers = users.stream().sorted(UserSorters.byUsername()).collect(Collectors.toList());
+
+            List<User> result = List.of(users.get(0), users.get(1), users.get(3), users.get(2), users.get(4));
+
+            System.out.println("\nТребуемый результат сортировки по нику" );
+            for(User value : result){
+                System.out.println(value);
+            }
+            System.out.println("\nДанные после сортировки по нику");
+            for(User value : sortedUsers){
+                System.out.println(value);
+            }
+
+            assertEquals(result, sortedUsers, "Записи должны совпадать");
+        }
+
+        @Test
+        void sortUserByFullname(){
+            List<User> sortedUsers = users.stream().sorted(UserSorters.byFullName()).collect(Collectors.toList());
+
+            List<User> result = List.of(users.get(1), users.get(0), users.get(3), users.get(2), users.get(4));
+
+            System.out.println("\nТребуемый результат сортировки по нику" );
+            for(User value : result){
+                System.out.println(value);
+            }
+            System.out.println("\nДанные после сортировки по нику");
+            for(User value : sortedUsers){
+                System.out.println(value);
+            }
+
+            assertEquals(result, sortedUsers, "Записи должны совпадать");
+        }
+
+        @Test
+        void sortUserByEmail(){
+            List<User> sortedUsers = users.stream().sorted(UserSorters.byEmail()).collect(Collectors.toList());
+
+            List<User> result = List.of(users.get(0), users.get(3), users.get(1), users.get(2), users.get(4));
+
+            System.out.println("\nТребуемый результат сортировки по нику" );
+            for(User value : result){
+                System.out.println(value);
+            }
+            System.out.println("\nДанные после сортировки по нику");
+            for(User value : sortedUsers){
+                System.out.println(value);
+            }
+
+            assertEquals(result, sortedUsers, "Записи должны совпадать");
+        }
+
+        @Test
+        void sortRoleByName(){
+            List<Role> sortedUsers = roles.stream().sorted(RoleSorters.byName()).collect(Collectors.toList());
+
+            List<Role> result = List.of(roles.get(0), roles.get(1), roles.get(3), roles.get(2));
+
+            System.out.println("\nТребуемый результат сортировки ролей по названию" );
+            for(Role value : result){
+                System.out.println(value);
+            }
+            System.out.println("\nДанные после сортировки ролей по названию");
+            for(Role value : sortedUsers){
+                System.out.println(value);
+            }
+
+            assertEquals(result, sortedUsers, "Записи должны совпадать");
+        }
+
+        @Test
+        void sortRoleByCount(){
+            List<Role> sortedUsers = roles.stream().sorted(RoleSorters.byPermissionCount()).collect(Collectors.toList());
+
+            List<Role> result = List.of(roles.get(3), roles.get(2), roles.get(1), roles.get(0));
+
+            System.out.println("\nТребуемый результат сортировки ролей по названию (увеличение)" );
+            for(Role value : result){
+                System.out.println(value);
+            }
+            System.out.println("\nДанные после сортировки ролей по названию");
+            for(Role value : sortedUsers){
+                System.out.println(value);
+            }
+
+            assertEquals(result, sortedUsers, "Записи должны совпадать");
+        }
+
+//        AssignmentMetadata metData = AssignmentMetadata.now("ADMIN", "Important reason");
+//        AssignmentMetadata metData2 = AssignmentMetadata.now("admin-report", "Important reason");
+//        DateTimeFormatter dataFormat = DateTimeFormatter.ofPattern("yyyy MM dd HH:mm:ss");
+//        TemporaryAssignment temp1 = new TemporaryAssignment(users.get(2), roles.get(2), new AssignmentMetadata("ADMIN", LocalDateTime.now().plusHours(3).format(dataFormat), "Important reason"));
+//        temp1.extend(LocalDateTime.now().plusHours(3).format(dataFormat));
+//        TemporaryAssignment temp2 = new TemporaryAssignment(users.get(3), roles.get(2), new AssignmentMetadata("admin-report", LocalDateTime.now().plusHours(1).format(dataFormat), "Important reason"));
+//        temp2.extend(LocalDateTime.now().plusHours(1).format(dataFormat));
+//        assignmentList = List.of(
+//                new PermanentAssignment(users.get(0), roles.get(0), metData),   // admin
+//                new TemporaryAssignment(users.get(1), roles.get(1), metData),   // admin-report
+//                temp1,   // user
+//                temp2,  // user
+//                new TemporaryAssignment(users.get(4), roles.get(3), metData2)   // guest
+//                );
+
+        @Test
+        void sortAssigmentByUsername(){
+            List<AbstractRoleAssignment> sortedUsers = assignmentList.stream().sorted(AssignmentSorters.byUsername()).collect(Collectors.toList());
+
+            List<AbstractRoleAssignment> result = List.of(assignmentList.get(0), assignmentList.get(1), assignmentList.get(3), assignmentList.get(2), assignmentList.get(4));
+
+            System.out.println("\nТребуемый результат сортировки прав доступа по имени пользователя" );
+            for(AbstractRoleAssignment value : result){
+                System.out.println(value.summary());
+            }
+            System.out.println("\nДанные после сортировки прав доступа по имени пользователя");
+            for(AbstractRoleAssignment value : sortedUsers){
+                System.out.println(value.summary());
+            }
+
+            assertEquals(result, sortedUsers, "Записи должны совпадать");
+        }
+
+        @Test
+        void sortAssigmentByRoleName(){
+            List<AbstractRoleAssignment> sortedUsers = assignmentList.stream().sorted(AssignmentSorters.byRoleName()).collect(Collectors.toList());
+
+            List<AbstractRoleAssignment> result = List.of(assignmentList.get(0), assignmentList.get(1), assignmentList.get(4), assignmentList.get(2), assignmentList.get(3));
+
+            System.out.println("\nТребуемый результат сортировки прав доступа по имени пользователя" );
+            for(AbstractRoleAssignment value : result){
+                System.out.println(value.summary());
+            }
+            System.out.println("\nДанные после сортировки прав доступа по имени пользователя");
+            for(AbstractRoleAssignment value : sortedUsers){
+                System.out.println(value.summary());
+            }
+
+            assertEquals(result, sortedUsers, "Записи должны совпадать");
+        }
+
+        @Test
+        void sortAssigmentByDate(){
+            List<AbstractRoleAssignment> sortedUsers = assignmentList.stream().sorted(AssignmentSorters.byAssignmentDate()).collect(Collectors.toList());
+
+            List<AbstractRoleAssignment> result = List.of(assignmentList.get(0), assignmentList.get(1), assignmentList.get(4), assignmentList.get(3), assignmentList.get(2));
+
+            System.out.println("\nТребуемый результат сортировки прав доступа по имени пользователя" );
+            for(AbstractRoleAssignment value : result){
+                System.out.println(value.summary());
+            }
+            System.out.println("\nДанные после сортировки прав доступа по имени пользователя");
+            for(AbstractRoleAssignment value : sortedUsers){
+                System.out.println(value.summary());
+            }
+
+            assertEquals(result, sortedUsers, "Записи должны совпадать");
         }
 
     }
