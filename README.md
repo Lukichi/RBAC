@@ -23,3 +23,54 @@
 + https://wiki.rakovets.by/java/core/date-and-time/#_%D0%B4%D0%B0%D1%82%D0%B0_%D0%B8_%D0%B2%D1%80%D0%B5%D0%BC%D1%8F_since_version_8
 
 
+<h1>Подзадача 2: Фильтры</h1>
+
+<h2>Пометки</h2>
++ endsWith - содержание подстроки в конце
++ equals - содержание (полностью и только)
++ contains - содержание (наличие)
++ anyMatch - имеет ли хоть один
+
+<h2>JUnit</h2>
++ Статьи:
+  + https://habr.com/ru/articles/590607/
++ Методы:
+  + assertEquals - сравнивает 2 списка, элемента (числа и тд)
+  + Nested - пометки иерархии (обязательно)
+
+<h2>2.1. Фильтрация пользователей</h2>
++ UserFilter - для фильтра
+  + boolean test(User user) - проверка условия
+  + UserFilter and(UserFilter other) - объединяет 2 теста через И
+  + UserFilter or(UserFilter other) - объединяет 2 теста чарез ИЛИ
++ UserFilters - фильтр пользователей
+  + UserFilter byUsername(String username) - проверка ника
+  + UserFilter byUsernameContains(String substring) - содержание подстроки в нике
+  + UserFilter byEmail(String email)  - проверка почты
+  + UserFilter byEmailDomain(String domain)  - проверка домена (собака + прочее: @company.com)
+  + UserFilter byFullNameContains(String substring)  - ФИО содержит часть
++ RoleFilters - фильтр ролей
+  + RoleFilter byName(String name) - проверка названия
+  + RoleFilter byNameContains(String substring) - фильтрация по название (содержит подстроку)
+  + RoleFilter hasPermission(Permission permission) - фильтрация прав доступа по объекту
+  + RoleFilter hasPermission(String permissionName, String resource) - фильтрация прав доступа по названию и русерсу
+  + RoleFilter hasAtLeastNPermissions(int n) - допускается от >= n прав доступа
++ AssignmentFilter - фильтр мета-данных
+  + AssignmentFilter byUser(User user) — назначения для конкретного пользователя
+  + AssignmentFilter byUsername(String username) - соответствие ника пользователя
+  + AssignmentFilter byRole(Role role) — назначения конкретной роли
+  + AssignmentFilter byRoleName(String roleName) - соответствие роли пользователя
+  + AssignmentFilter activeOnly() — только активные назначения
+  + AssignmentFilter inactiveOnly() — только неактивные
+  + AssignmentFilter byType(String type) — "PERMANENT" или "TEMPORARY"
+  + AssignmentFilter assignedBy(String username) — кто назначил
+  + AssignmentFilter assignedAfter(String date) — назначенные после даты
+  + AssignmentFilter expiringBefore(String date) — временные назначения, истекающие до даты
+
+<h2>2.4 Сортировка</h2>
++ Comparator
+    + https://wiki.rakovets.by/java/core/java-collection-framework/#_interface_comparable_and_comparator
+    + Comparator.comparing - создание компаратора (инструкции для сортировки, котрый отвечает элемент больше, равен или меньше другого), в параметрах *поле для сравнения* + *признак*
+    + String.CASE_INSENSITIVE_ORDER - 2 параметр (признак), сравнение без учета регистра
+    + comparingInt - сравнивает числа (есть и с плавающей точкой)
++ 

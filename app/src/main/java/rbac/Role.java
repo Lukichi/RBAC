@@ -3,10 +3,10 @@ package rbac;
 import java.util.*;
 
 public class Role {
-    String id;
-    String name;
-    String description;
-    Set<Permission> permissions;
+    private String id;
+    private String name;
+    private String description;
+    private Set<Permission> permissions;
 
     public Role (String name, String description){
         this.id = "role_" + UUID.randomUUID().toString();

@@ -1,7 +1,6 @@
 package rbac;
 
 import java.util.regex.Pattern;
-import java.util.InputMismatchException;
 
 public record User(String username, String fullName, String email) {
 

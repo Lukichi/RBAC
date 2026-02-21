@@ -2,15 +2,14 @@ package rbac;
 
 import java.util.*;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 public class Main {
     public static void main(){
 
-//        User first = User.validate("test1", "Testor First", "test@mail.ru");
-//        System.out.println( first.format());
+        User first = User.validate("test1", "Testor First", "test@mail.ru");
+        System.out.println( first.format());
 
 //        User second = User.validate("test@", "Testor 2", "test.@test@mail.ru");
 //        System.out.println( second.format());

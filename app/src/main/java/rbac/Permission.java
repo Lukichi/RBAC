@@ -1,6 +1,5 @@
 package rbac;
 
-import java.util.Locale;
 import java.util.regex.Pattern;
 
 public record Permission(String name, String resource, String description) {

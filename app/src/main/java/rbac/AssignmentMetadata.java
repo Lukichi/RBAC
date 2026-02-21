@@ -2,7 +2,6 @@ package rbac;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Locale;
 
 public record AssignmentMetadata(String assignedBy, String assignedAt, String reason) {
 
