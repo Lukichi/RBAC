@@ -3,6 +3,7 @@
 <h1>Подзадача 1: Создание базовых структур данных</h1>
 
 <h2>Структура</h2>
+
 - User - запись пользователя (ник, имя, почта)
 - Permission - запись доступа (название права, ресурс для управления, описание)
 - Role - класс ролей (ID, название, описание, права доступа Permission)
@@ -13,25 +14,30 @@
 - TemporaryAssignment - временные роли, по истечению срока не активно (идет от AbstractRoleAssignment)
 
 <h2>Паттерны и сравнение</h2>
+
 - https://wiki.rakovets.by/java/core/misc/#_%D1%80%D0%B5%D0%B3%D1%83%D0%BB%D1%8F%D1%80%D0%BD%D1%8B%D0%B5_%D0%B2%D1%8B%D1%80%D0%B0%D0%B6%D0%B5%D0%BD%D0%B8%D1%8F
 - https://javarush.com/groups/posts/regulyarnye-vyrazheniya-v-java
 
 <h2>Интерфейс Set</h2>
+
 - https://wiki.rakovets.by/java/core/java-collection-framework/#_interface_set
 
 <h2>Дата и время</h2>
+
 - https://wiki.rakovets.by/java/core/date-and-time/#_%D0%B4%D0%B0%D1%82%D0%B0_%D0%B8_%D0%B2%D1%80%D0%B5%D0%BC%D1%8F_since_version_8
 
 
 <h1>Подзадача 2: Фильтры</h1>
 
 <h2>Пометки</h2>
+
 - endsWith - содержание подстроки в конце
 - equals - содержание (полностью и только)
 - contains - содержание (наличие)
 - anyMatch - имеет ли хоть один
 
 <h2>JUnit</h2>
+
 - Статьи:
   - https://habr.com/ru/articles/590607/
 - Методы:
@@ -40,6 +46,7 @@
   - assertThrows - проверяет, что код выдает исключение
 
 <h2>2.1. Фильтрация пользователей</h2>
+
 - UserFilter - для фильтра
   - boolean test(User user) - проверка условия
   - UserFilter and(UserFilter other) - объединяет 2 теста через И
@@ -69,6 +76,7 @@
   - AssignmentFilter expiringBefore(String date) — временные назначения, истекающие до даты
 
 <h2>2.4 Сортировка</h2>
+
 - Comparator
     - https://wiki.rakovets.by/java/core/java-collection-framework/#_interface_comparable_and_comparator
     - Comparator.comparing - создание компаратора (инструкции для сортировки, котрый отвечает элемент больше, равен или меньше другого), в параметрах *поле для сравнения* - *признак*
@@ -79,11 +87,13 @@
 <h1>Подзадача 3: Менеджеры данных</h1>
 
 <h2>Optional</h2>
+
 - https://wiki.rakovets.by/java/core/lambda-expressions/#_%D0%BA%D0%BB%D0%B0%D1%81%D1%81_optional
 - https://javarush.com/groups/posts/3941-kofe-breyk-161-kak-obrabatihvatjh-null-v-java-s-pomojshjhju-optional
 - Optional.ofNullable - если значение null, то само обработает
 
 <h2>3.1. Интерфейс репозитория</h2>
+
 - Repository<T> - общий интерфейс для работы с менеджерами (классами, хранящими данные)
   - void add(T item) - добавлять
   - boolean remove(T item) - удалять
@@ -93,6 +103,7 @@
   - void clear() - очистить
 
 <h2>3.2. Менеджер пользователей</h2>
+
 - UserManager - класс для хранения данных пользователя
     - переопределяет методы из интерфейса
     - Optional<User> findByUsername(String username) - ищет по нику
