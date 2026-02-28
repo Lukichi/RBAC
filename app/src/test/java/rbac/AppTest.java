@@ -9,10 +9,7 @@ import rbac.CommandAndMenuSystem.RBACSystem;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -705,6 +702,19 @@ class AppTest {
 
             String resultStatictic = "Count users: " + 1 + "\nCount roles: " + 1 +"\nCount assignments: " + 1;
             assertEquals(resultStatictic, RBACSystem.generateStatistics());
+        }
+
+        @Test
+        void testCommand(){
+            Scanner scanner = new Scanner(System.in);
+
+            while (true) {
+                String command = scanner.nextLine();
+
+                System.out.println(command);
+            }
+
+
         }
     }
 

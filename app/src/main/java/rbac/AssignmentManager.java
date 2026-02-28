@@ -127,7 +127,7 @@ public class AssignmentManager implements Repository<RoleAssignment> {
         return flag;
     }
 
-    Set<Permission> getUserPermissions(User user){
+    public Set<Permission> getUserPermissions(User user){
         if (user == null) {
             return Collections.emptySet();
         }
@@ -136,7 +136,7 @@ public class AssignmentManager implements Repository<RoleAssignment> {
                 .flatMap(assignment -> assignment.role().getPermissions().stream()).collect(Collectors.toSet());
     }
 
-    void revokeAssignment(String assignmentId){
+    public void revokeAssignment(String assignmentId){
         RoleAssignment assignment = assigmentsData.get(assignmentId);
         if (assignment == null)
             throw new IllegalArgumentException("Assignment with id '" + assignmentId + "' not found");
@@ -149,7 +149,7 @@ public class AssignmentManager implements Repository<RoleAssignment> {
         assigmentsData.put(assignmentId, permAssignment);
     }
 
-    void extendTemporaryAssignment(String assignmentId, String newExpirationDate){
+    public void extendTemporaryAssignment(String assignmentId, String newExpirationDate){
         RoleAssignment assignment = assigmentsData.get(assignmentId);
         if (assignment == null)
             throw new IllegalArgumentException("Assignment with id '" + assignmentId + "' not found");

@@ -149,3 +149,13 @@
   - setCurrentUser - устанавливает нового текущего пользователя
   - initialize - задает начальные роли, пользователя-админа с назначением роли;
   - generateStatistics - выдает статистику по количеству
+
+<h2>4.3. Парсер команд и меню</h2>
+
+- CommandParser - класс для работы с командами
+    - Map<String, Command> commands - список с названием команды и самой команды (в виде лямбды функции)
+    - Map<String, String> commandDescriptions - команда и её описание
+    - void registerCommand(String name, String description, Command command) - регистрация команды
+    - void executeCommand(String commandName, Scanner scanner, RBACSystem system) - выполнение команды
+    - void printHelp() - вывод информации (конда - описание)
+    - void parseAndExecute(String input, Scanner scanner, RBACSystem system) - строку делим на команды и выполняем

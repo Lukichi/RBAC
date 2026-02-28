@@ -1,5 +1,9 @@
 package rbac;
 
+import rbac.CommandAndMenuSystem.CommandParser;
+import rbac.CommandAndMenuSystem.CommandRegistry;
+import rbac.CommandAndMenuSystem.RBACSystem;
+
 import java.util.*;
 
 import java.time.LocalDateTime;
@@ -8,8 +12,8 @@ import java.time.format.DateTimeFormatter;
 public class Main {
     public static void main(){
 
-        User first = User.validate("test1", "Testor First", "test@mail.ru");
-        System.out.println( first.format());
+//        User first = User.validate("test1", "Testor First", "test@mail.ru");
+//        System.out.println( first.format());
 
 //        User second = User.validate("test@", "Testor 2", "test.@test@mail.ru");
 //        System.out.println( second.format());
@@ -88,37 +92,53 @@ public class Main {
 
 //        =======================================================
 
-        DateTimeFormatter dataFormat = DateTimeFormatter.ofPattern("yyyy MM dd HH:mm:ss");
+//        DateTimeFormatter dataFormat = DateTimeFormatter.ofPattern("yyyy MM dd HH:mm:ss");
+//
+//        User user = User.validate("test1", "Tester First", "test@mail.ru");
+//
+//        Set<Permission> permissions = new HashSet<>();
+//        permissions.add(new Permission("READ", "testers", "Read users"));
+//        permissions.add(new Permission("ReaD", "testers", "Read users"));
+//        permissions.add(new Permission("Write", "report", "other text"));
+//        permissions.add(new Permission("READ", "tester", "text read"));
+//        Role role = new Role("admin2", "Description for admin", permissions);
+//
+//        AssignmentMetadata metData = AssignmentMetadata.now("ADMIN", "Important reason");
+//
+//        String date1 = LocalDateTime.now().minusDays(19).format(dataFormat);
+//        TemporaryAssignment assignment = new TemporaryAssignment(user, role, metData, date1, false);
+//        System.out.println(assignment.summary());
+//
+//        System.out.println();
+//
+//        String date2 = LocalDateTime.now().format(dataFormat);
+//        TemporaryAssignment assignment2 = new TemporaryAssignment(user, role, metData, date2, true);
+//        System.out.println(assignment2.summary());
+//
+//        System.out.println();
+//        String date3 = LocalDateTime.now().format(dataFormat);
+//        TemporaryAssignment assignment3 = new TemporaryAssignment(user, role, metData, date3, false);
+//
+//        System.out.println(assignment3.summary());
+////        assignment3.extend(LocalDateTime.now().minusHours(22).format(dataFormat));
+//        assignment3.extend(LocalDateTime.now().plusHours(2).format(dataFormat));
+//        System.out.println(assignment3.summary());
 
-        User user = User.validate("test1", "Tester First", "test@mail.ru");
+//        =====================================================================
 
-        Set<Permission> permissions = new HashSet<>();
-        permissions.add(new Permission("READ", "testers", "Read users"));
-        permissions.add(new Permission("ReaD", "testers", "Read users"));
-        permissions.add(new Permission("Write", "report", "other text"));
-        permissions.add(new Permission("READ", "tester", "text read"));
-        Role role = new Role("admin2", "Description for admin", permissions);
+        RBACSystem system = new RBACSystem();
+        system.initialize();
+        system.setCurrentUser("admin");
+        CommandParser parser = new CommandParser();
+        CommandRegistry.registerCommands(parser);
 
-        AssignmentMetadata metData = AssignmentMetadata.now("ADMIN", "Important reason");
+        Scanner scanner = new Scanner(System.in);
+        while (true) {
+            System.out.println("\nInput command:");
+            String command = scanner.nextLine();
 
-        String date1 = LocalDateTime.now().minusDays(19).format(dataFormat);
-        TemporaryAssignment assignment = new TemporaryAssignment(user, role, metData, date1, false);
-        System.out.println(assignment.summary());
-
-        System.out.println();
-
-        String date2 = LocalDateTime.now().format(dataFormat);
-        TemporaryAssignment assignment2 = new TemporaryAssignment(user, role, metData, date2, true);
-        System.out.println(assignment2.summary());
-
-        System.out.println();
-        String date3 = LocalDateTime.now().format(dataFormat);
-        TemporaryAssignment assignment3 = new TemporaryAssignment(user, role, metData, date3, false);
-
-        System.out.println(assignment3.summary());
-//        assignment3.extend(LocalDateTime.now().minusHours(22).format(dataFormat));
-        assignment3.extend(LocalDateTime.now().plusHours(2).format(dataFormat));
-        System.out.println(assignment3.summary());
+            parser.parseAndExecute(command, scanner, system);
+        }
 
     }
 }

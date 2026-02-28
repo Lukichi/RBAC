@@ -32,7 +32,7 @@ public record Permission(String name, String resource, String description) {
         this.description = description;
     }
 
-    String format(){
+    public String format(){
         return String.format("%s on %s: %s", name, resource, description);
     }
 
