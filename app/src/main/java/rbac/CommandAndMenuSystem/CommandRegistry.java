@@ -286,5 +286,179 @@ public class CommandRegistry {
                 }
             }
         });
+
+        parser.registerCommand("role-list", "Выводит список всех ролей", (scanner, system) -> {
+            List<Role> roleList = RBACSystem.getRoleManager().findAll();
+
+            for (Role role : roleList){
+                Set<Permission> rolePer = role.getPermissions();
+                System.out.println(role.toString());
+            }
+        });
+
+        parser.registerCommand("role-create", "Создание новой роли", (scanner, system) -> {
+            System.out.print("Введите имя роли: ");
+            String roleName = scanner.nextLine();
+            System.out.print("Введите описание: ");
+            String roleDescription = scanner.nextLine();
+
+            Role newRole = new Role(roleName, roleDescription);
+            RBACSystem.getRoleManager().add(newRole);
+            System.out.println("Новая роль:" + newRole.toString());
+        });
+
+        parser.registerCommand("role-update", "Обновить роль", (scanner, system) -> {
+            System.out.print("Введите имя роли: ");
+            String roleName = scanner.nextLine();
+
+            Optional<Role> optionalRole = RBACSystem.getRoleManager().findByName(roleName);
+            Role role = optionalRole.orElse(null);
+            if (role == null){
+                System.out.println("Роль " + roleName + " не найдена");
+                return;
+            }
+
+            System.out.print("Введите имя роли (оставить пустым, если не хотите изменять): ");
+            String roleNameNew = scanner.nextLine();
+            System.out.print("Введите новое описание (оставить пустым, если не хотите изменять): ");
+            String roleDescriptionNew = scanner.nextLine();
+
+            if (roleNameNew.trim().isEmpty())
+                roleNameNew = roleName;
+            if (roleDescriptionNew.trim().isEmpty())
+                roleDescriptionNew = role.getDescription();
+
+            Set<Permission> permissions = role.getPermissions();
+            Role newRole = new Role(roleNameNew, roleDescriptionNew, permissions);
+            RBACSystem.getRoleManager().remove(role);
+            RBACSystem.getRoleManager().add(newRole);
+            System.out.println("Новая роль:" + newRole.toString());
+        });
+
+        parser.registerCommand("role-delete", "Удалить роль", (scanner, system) -> {
+            System.out.print("Введите имя роли: ");
+            String roleName = scanner.nextLine();
+
+            Optional<Role> optionalRole = RBACSystem.getRoleManager().findByName(roleName);
+            Role role = optionalRole.orElse(null);
+            if (role == null){
+                System.out.println("Роль " + roleName + " не найдена");
+                return;
+            }
+            RBACSystem.getRoleManager().remove(role);
+            System.out.println("Роль удалена");
+        });
+
+        parser.registerCommand("role-add-permission", "Добавить права у роли", (scanner, system) -> {
+            System.out.print("Введите имя роли: ");
+            String roleName = scanner.nextLine();
+
+            Optional<Role> optionalRole = RBACSystem.getRoleManager().findByName(roleName);
+            Role role = optionalRole.orElse(null);
+            if (role == null){
+                System.out.println("Роль " + roleName + " не найдена");
+                return;
+            }
+
+            System.out.print("Введите имя права доступа: ");
+            String permissionName = scanner.nextLine();
+            System.out.print("Введите ресурс права доступа: ");
+            String permissionResource = scanner.nextLine();
+            System.out.print("Введите описание права доступа: ");
+            String permissionDescription = scanner.nextLine();
+
+            Permission permission = new Permission(permissionName, permissionResource, permissionDescription);
+            RBACSystem.getRoleManager().addPermissionToRole(roleName, permission);
+
+            System.out.println("Право доступа успешно добавлено");
+        });
+
+        parser.registerCommand("role-remove-permission", "Удалить права у роли", (scanner, system) -> {
+            System.out.print("Введите имя роли: ");
+            String roleName = scanner.nextLine();
+
+            Optional<Role> optionalRole = RBACSystem.getRoleManager().findByName(roleName);
+            Role role = optionalRole.orElse(null);
+            if (role == null){
+                System.out.println("Роль " + roleName + " не найдена");
+                return;
+            }
+
+            System.out.println("Права доступа:");
+            List<Permission> permissions = role.getPermissions().stream().toList();
+            for (int i = 0; i < permissions.size(); i++){
+                System.out.println(i + ") " + permissions.get(i).format());
+            }
+            System.out.println("\nВедите номер права, которое хотите удалить: ");
+            int a = scanner.nextInt();
+            scanner.nextLine();
+            RBACSystem.getRoleManager().removePermissionFromRole(roleName, permissions.get(a));
+            System.out.println("Роль удалена");
+        });
+
+        parser.registerCommand("role-search", "Найти роль по фильтру", (scanner, system) -> {
+            System.out.println("Выберите тип фильтрации:\n" +
+                    "   1) По названию (содержит)\n" +
+                    "   2) По наличию конкретного права\n" +
+                    "   3) По минимальному количеству прав\n");
+
+            int a = scanner.nextInt();
+            scanner.nextLine();
+
+            switch (a){
+                case 1:{
+                    System.out.println("Введите название роли: ");
+                    String roleName = scanner.nextLine();
+                    Optional<Role> optionalRole = RBACSystem.getRoleManager().findByName(roleName);
+                    Role role = optionalRole.orElse(null);
+                    if (role == null){
+                        System.out.println("Роль " + roleName + " не найдена");
+                        return;
+                    }
+                    System.out.println(role.toString());
+                    break;
+                }
+                case 2:{
+                    System.out.print("Введите имя права доступа: ");
+                    String permissionName = scanner.nextLine();
+                    System.out.print("Введите ресурс права доступа: ");
+                    String permissionResource = scanner.nextLine();
+                    System.out.print("Введите описание права доступа: ");
+                    String permissionDescription = scanner.nextLine();
+
+                    Permission permission = new Permission(permissionName, permissionResource, permissionDescription);
+                    List<Role> roleList = RBACSystem.getRoleManager().findByFilter(RoleFilters.hasPermission(permission));
+                    if (roleList.isEmpty()){
+                        System.out.println("Роли не найдены");
+                        return;
+                    }
+
+                    for (Role value : roleList){
+                        System.out.println(value.toString());
+                    }
+                    break;
+                }
+                case 3: {
+                    System.out.println("Введите минимальное количество прав:");
+                    int b = scanner.nextInt();
+                    scanner.nextLine();
+
+                    List<Role> roleList = RBACSystem.getRoleManager().findByFilter(RoleFilters.hasAtLeastNPermissions(b));
+                    if (roleList.isEmpty()){
+                        System.out.println("Роли не найдены");
+                        return;
+                    }
+
+                    for (Role value : roleList){
+                        System.out.println(value.toString());
+                    }
+                    break;
+                }
+                default:{
+                    System.out.println("По выбранному типу нет фильтра, повторите попытку.");
+                    break;
+                }
+            }
+        });
     }
 }

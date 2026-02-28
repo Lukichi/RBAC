@@ -24,9 +24,6 @@ public record Permission(String name, String resource, String description) {
         if (!RES_PATTERN.matcher(goodResource).matches())
             throw new IllegalArgumentException("Invalid resource format. resource must contain only letters");
 
-        if (description == null || description.isEmpty())
-            throw new IllegalArgumentException("Invalid description format. Description not be empty");
-
         this.name = goodName;
         this.resource = goodResource;
         this.description = description;
