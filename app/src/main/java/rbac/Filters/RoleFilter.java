@@ -1,7 +1,9 @@
-package rbac;
+package rbac.Filters;
+
+import rbac.Components.Role;
 
 @FunctionalInterface
-interface RoleFilter {
+public interface RoleFilter {
     boolean test(Role role);
 
     default RoleFilter and(RoleFilter other){

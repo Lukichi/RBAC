@@ -127,8 +127,8 @@ public class Main {
 //        =====================================================================
 
         RBACSystem system = new RBACSystem();
-//        system.initialize();
-//        system.setCurrentUser("admin");
+        system.initialize();
+        system.setCurrentUser("admin");
         CommandParser parser = new CommandParser();
         CommandRegistry.registerCommands(parser);
 

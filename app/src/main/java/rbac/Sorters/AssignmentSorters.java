@@ -1,4 +1,6 @@
-package rbac;
+package rbac.Sorters;
+
+import rbac.Components.RoleAssignment;
 
 import java.util.Comparator;
 

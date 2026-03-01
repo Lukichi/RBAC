@@ -1,9 +1,9 @@
-package rbac;
+package rbac.Components;
 
 import java.util.List;
 import java.util.Optional;
 
-interface  Repository<T> {
+public interface  Repository<T> {
     void add(T item);
     boolean remove(T item);
     Optional<T> findById(String id);

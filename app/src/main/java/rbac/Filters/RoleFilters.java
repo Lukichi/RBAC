@@ -1,6 +1,6 @@
-package rbac;
+package rbac.Filters;
 
-import java.util.Locale;
+import rbac.Components.Permission;
 
 public class RoleFilters {
 

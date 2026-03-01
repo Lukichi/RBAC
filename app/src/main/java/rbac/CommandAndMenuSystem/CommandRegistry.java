@@ -1,6 +1,9 @@
 package rbac.CommandAndMenuSystem;
 
-import rbac.*;
+import rbac.Components.*;
+import rbac.Filters.AssignmentFilters;
+import rbac.Filters.RoleFilters;
+import rbac.Filters.UserFilters;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -9,13 +12,10 @@ import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import static java.lang.System.exit;
-import static java.lang.System.setOut;
 
 public class CommandRegistry {
 
@@ -511,7 +511,7 @@ public class CommandRegistry {
                     String reason = scanner.nextLine();
 
                     String nowUser = system.getCurrentUser();
-                    if (nowUser.isEmpty()){
+                    if (nowUser == null || nowUser.isEmpty()){
                         System.out.println("Не указан текущий пользовать, повторите попытку после указания");
                         return;
                     }
@@ -1168,7 +1168,6 @@ public class CommandRegistry {
 
                 if (roleMatcher.find()) {
                     String rolesContent = roleMatcher.group(1).trim();
-                    System.out.println(rolesContent);
 
                     Pattern pattern = Pattern.compile("\\{(?:[^{}]|\\{(?:[^{}]|\\{[^{}]*\\})*\\})*\\}", Pattern.DOTALL );
 
@@ -1244,11 +1243,9 @@ public class CommandRegistry {
 
                 if (assignmentsMatcher.find()) {
                     String assignmentsContent = assignmentsMatcher.group(1).trim();
-                    System.out.println("Содержимое assignments:");
-                    System.out.println(assignmentsContent);
 
                     Pattern assignmentsPatternElements =  Pattern.compile(
-                            "\\{(?:[^{}]|\\{[^{}]*\\})*\\}",  // Обрабатывает вложенные объекты
+                            "\\{(?:[^{}]|\\{[^{}]*\\})*\\}",
                             Pattern.DOTALL
                     );
                     Matcher matcherPermissonElements = assignmentsPatternElements.matcher(assignmentsContent);
@@ -1256,8 +1253,6 @@ public class CommandRegistry {
                     while (matcherPermissonElements.find()) {
                         count++;
                         String assignment = matcherPermissonElements.group().trim();
-                        System.out.println("\n=== Assignment " + count + " ===");
-                        System.out.println(assignment);
 
                         String type = "";
                         Pattern typePattern = Pattern.compile("\"type\"\\s*:\\s*\"([^\"]+)\"");

@@ -1,4 +1,4 @@
-package rbac;
+package rbac.Components;
 
 import java.util.regex.Pattern;
 
@@ -33,7 +33,7 @@ public record Permission(String name, String resource, String description) {
         return String.format("%s on %s: %s", name, resource, description);
     }
 
-    boolean matches(String namePattern, String resourcePattern){
+    public boolean matches(String namePattern, String resourcePattern){
         if (namePattern == null || resourcePattern == null)
             return false;
 

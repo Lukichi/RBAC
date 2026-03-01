@@ -1,4 +1,8 @@
-package rbac;
+package rbac.Managers;
+
+import rbac.Filters.UserFilter;
+import rbac.Components.Repository;
+import rbac.Components.User;
 
 import java.util.*;
 import java.util.regex.Pattern;

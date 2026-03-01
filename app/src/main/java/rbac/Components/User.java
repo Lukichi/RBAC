@@ -1,4 +1,4 @@
-package rbac;
+package rbac.Components;
 
 import java.util.regex.Pattern;
 

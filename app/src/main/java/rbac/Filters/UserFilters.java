@@ -1,6 +1,4 @@
-package rbac;
-
-import java.util.Locale;
+package rbac.Filters;
 
 public class UserFilters {
 

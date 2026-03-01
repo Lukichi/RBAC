@@ -1,4 +1,4 @@
-package rbac;
+package rbac.Components;
 
 public class PermanentAssignment extends AbstractRoleAssignment {
 

@@ -1,4 +1,8 @@
-package rbac;
+package rbac.Managers;
+
+import rbac.Components.*;
+import rbac.Filters.AssignmentFilter;
+import rbac.Sorters.AssignmentSorters;
 
 import java.util.*;
 import java.util.stream.Collectors;

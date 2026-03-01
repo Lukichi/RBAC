@@ -1,7 +1,9 @@
-package rbac;
+package rbac.Filters;
+
+import rbac.Components.RoleAssignment;
 
 @FunctionalInterface
-interface AssignmentFilter {
+public interface AssignmentFilter {
     boolean test(RoleAssignment assignment);
 
     default AssignmentFilter and(AssignmentFilter other){

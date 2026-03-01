@@ -1,6 +1,9 @@
 package rbac.CommandAndMenuSystem;
 
-import rbac.*;
+import rbac.Components.*;
+import rbac.Managers.AssignmentManager;
+import rbac.Managers.RoleManager;
+import rbac.Managers.UserManager;
 
 import java.util.HashSet;
 import java.util.Optional;

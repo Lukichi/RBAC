@@ -1,4 +1,6 @@
-package rbac;
+package rbac.Filters;
+
+import rbac.Components.User;
 
 @FunctionalInterface
 public interface UserFilter {

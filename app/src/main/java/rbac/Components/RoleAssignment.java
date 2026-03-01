@@ -1,4 +1,4 @@
-package rbac;
+package rbac.Components;
 
 public interface RoleAssignment {
     String assignmentId();

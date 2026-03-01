@@ -1,4 +1,9 @@
-package rbac;
+package rbac.Managers;
+
+import rbac.Components.Repository;
+import rbac.Filters.RoleFilter;
+import rbac.Components.Permission;
+import rbac.Components.Role;
 
 import java.util.*;
 import java.util.regex.Pattern;

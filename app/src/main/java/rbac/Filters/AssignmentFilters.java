@@ -1,8 +1,10 @@
-package rbac;
+package rbac.Filters;
+
+import rbac.Components.Role;
+import rbac.Components.User;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Locale;
 
 public class AssignmentFilters {
 
