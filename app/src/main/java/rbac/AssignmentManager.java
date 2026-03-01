@@ -97,7 +97,7 @@ public class AssignmentManager implements Repository<RoleAssignment> {
         return assigmentsData.values().stream().filter(assignment -> !assignment.isActive()).toList().stream().sorted(AssignmentSorters.byUsername()).toList();
     }
 
-    boolean userHasRole(User user, Role role){
+    public boolean userHasRole(User user, Role role){
         if (user == null)
             throw new IllegalArgumentException("User cannot be null");
 
@@ -107,7 +107,7 @@ public class AssignmentManager implements Repository<RoleAssignment> {
         return !result.isEmpty();
     }
 
-    boolean userHasPermission(User user, String permissionName, String resource){
+    public boolean userHasPermission(User user, String permissionName, String resource){
         if (user == null )
             throw new IllegalArgumentException("User cannot be null");
         if (permissionName == null)

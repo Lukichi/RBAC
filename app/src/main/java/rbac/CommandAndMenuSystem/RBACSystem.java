@@ -35,6 +35,11 @@ public class RBACSystem {
         if (!UN_PATTER.matcher((username)).matches())
             throw new IllegalArgumentException("Invalid format username. Username must not contain special characters");
 
+        Optional<User> optionalUser = RBACSystem.getUserManager().findByUsername(username);
+        User user = optionalUser.orElse(null);
+        if (user == null){
+            throw new IllegalArgumentException("User witch username *" + username + "* not found");
+        }
         currentUser = username;
     }
 

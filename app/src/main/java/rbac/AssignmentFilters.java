@@ -45,10 +45,10 @@ public class AssignmentFilters {
             LocalDateTime filterDate = LocalDateTime.parse(date, DATE_FORMAT);
             LocalDateTime assignedDate = LocalDateTime.parse(assignedAt, DATE_FORMAT);
 
-            System.out.println("DATA TIME: " + assignedAt);
-            System.out.println("    filter TIME: " + date);
+//            System.out.println("DATA TIME: " + assignedAt);
+//            System.out.println("    filter TIME: " + date);
 
-            return assignedDate.isAfter(filterDate) && assignment.assignmentType().equals("TEMPORARY");
+            return assignedDate.isAfter(filterDate);
         };
     }
 
@@ -59,8 +59,8 @@ public class AssignmentFilters {
             LocalDateTime filterDate = LocalDateTime.parse(date, DATE_FORMAT);
             LocalDateTime assignedDate = LocalDateTime.parse(assignedAt, DATE_FORMAT);
 
-            System.out.println("DATA TIME: " + assignedAt);
-            System.out.println("    filter TIME: " + date);
+//            System.out.println("DATA TIME: " + assignedAt);
+//            System.out.println("    filter TIME: " + date);
 
             return assignedDate.isBefore(filterDate) && assignment.assignmentType().equals("TEMPORARY");
         };
