@@ -5,13 +5,11 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import rbac.CommandAndMenuSystem.RBACSystem;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -656,34 +654,68 @@ class AppTest {
             assertEquals(result.size(), roleList.size(), "Размеры должны совпадать");
             assertEquals(result, roleList);
         }
+
+        @Test
+        void testAssigmentsManager() {
+            AssignmentManager assignmentManager = new AssignmentManager();
+            assignmentManager.add(assignmentList.get(0));
+            assignmentManager.add(assignmentList.get(1));
+            assignmentManager.add(assignmentList.get(2));
+            assignmentManager.add(assignmentList.get(3));
+            assignmentManager.add(assignmentList.get(4));
+
+            List<RoleAssignment> activeManager = assignmentManager.getActiveAssignments(); // сортируем по нику, иначе порядок рандомный
+            List<RoleAssignment> activeResult = List.of(assignmentList.get(0), assignmentList.get(3), assignmentList.get(2));
+            assertEquals(activeResult.size(), activeManager.size(), "Размеры должны совпадать");
+            assertEquals(activeResult, activeManager);
+
+            // на примере temp1, должна быть правда
+            boolean hasRoleManager = assignmentManager.userHasRole(users.get(2), roles.get(2));
+            assertEquals(true, hasRoleManager);
+
+            // на примере temp1, должна быть правда
+            boolean hasPermissoinsManager = assignmentManager.userHasPermission(users.get(2), permissions.get(3).name(), permissions.get(3).resource());
+            assertEquals(true, hasPermissoinsManager);
+
+            Set<Permission> getPirmisionsManager = assignmentManager.getUserPermissions(users.get(2));
+            Set<Permission> getPirmisionsResult = new HashSet<>();
+            getPirmisionsResult.add(permissions.get(3));
+            assertEquals(getPirmisionsResult, getPirmisionsManager);
+        }
     }
 
-    @Test
-    void testAssigmentsManager() {
-        AssignmentManager assignmentManager = new AssignmentManager();
-        assignmentManager.add(assignmentList.get(0));
-        assignmentManager.add(assignmentList.get(1));
-        assignmentManager.add(assignmentList.get(2));
-        assignmentManager.add(assignmentList.get(3));
-        assignmentManager.add(assignmentList.get(4));
+    @Nested
+    class testCommandAndSystem{
+        @Test
+        void testSystem() {
+            RBACSystem system = new RBACSystem();
+            system.initialize();
+            system.setCurrentUser("admin");
+            String nameUser = system.getCurrentUser();
+            assertEquals("admin", nameUser);
 
-        List<RoleAssignment> activeManager = assignmentManager.getActiveAssignments(); // сортируем по нику, иначе порядок рандомный
-        List<RoleAssignment> activeResult = List.of(assignmentList.get(0), assignmentList.get(3), assignmentList.get(2));
-        assertEquals(activeResult.size(), activeManager.size(), "Размеры должны совпадать");
-        assertEquals(activeResult, activeManager);
+            assertThrows(IllegalArgumentException.class, () -> {
+                system.setCurrentUser("admin2@1");
+            });
 
-        // на примере temp1, должна быть правда
-        boolean hasRoleManager = assignmentManager.userHasRole(users.get(2), roles.get(2));
-        assertEquals(true, hasRoleManager);
+            System.out.println(RBACSystem.generateStatistics());
 
-        // на примере temp1, должна быть правда
-        boolean hasPermissoinsManager = assignmentManager.userHasPermission(users.get(2), permissions.get(3).name(), permissions.get(3).resource());
-        assertEquals(true, hasPermissoinsManager);
+            String resultStatictic = "Count users: " + 1 + "\nCount roles: " + 1 +"\nCount assignments: " + 1;
+            assertEquals(resultStatictic, RBACSystem.generateStatistics());
+        }
 
-        Set<Permission> getPirmisionsManager = assignmentManager.getUserPermissions(users.get(2));
-        Set<Permission> getPirmisionsResult = new HashSet<>();
-        getPirmisionsResult.add(permissions.get(3));
-        assertEquals(getPirmisionsResult, getPirmisionsManager);
+        @Test
+        void testCommand(){
+            Scanner scanner = new Scanner(System.in);
+
+            while (true) {
+                String command = scanner.nextLine();
+
+                System.out.println(command);
+            }
+
+
+        }
     }
 
 }

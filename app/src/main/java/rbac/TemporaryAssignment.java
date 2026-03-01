@@ -9,8 +9,15 @@ public class TemporaryAssignment extends  AbstractRoleAssignment{
 
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy MM dd HH:mm:ss");
 
-    String expiresAt;
-    boolean autoRenew;
+    private String expiresAt;
+    private boolean autoRenew;
+
+    public String getExpiresAt(){
+        return expiresAt;
+    }
+    public Boolean getAutoRenew(){
+        return autoRenew;
+    }
 
     public TemporaryAssignment(User user, Role role, AssignmentMetadata metadata) {
         super(user, role, metadata);
