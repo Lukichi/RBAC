@@ -14,6 +14,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static java.lang.System.exit;
 
@@ -121,9 +122,29 @@ public class CommandRegistry {
                 System.out.println("Пользователь " + username + " не найден.");
                 return;
             }
-            else {
-                RBACSystem.getUserManager().remove(user);
+
+            System.out.println("Введите yes для подтверждения удаления: ");
+            String text = scanner.nextLine();
+
+            if (!text.equals("yes")){
+                System.out.println("Удаление отменено");
+                return;
             }
+
+            List<RoleAssignment> assignmentList = RBACSystem.getAssignmentManager().findByFilter(AssignmentFilters.byUser(user));
+            List<RoleAssignment> assignmentList2 = RBACSystem.getAssignmentManager().findByFilter(AssignmentFilters.assignedBy(user.username()));
+
+            for (RoleAssignment value : assignmentList2){
+                RBACSystem.getAssignmentManager().remove(value);
+            }
+            for (RoleAssignment value : assignmentList){
+                if (assignmentList2.contains(value))
+                    continue;
+
+                RBACSystem.getAssignmentManager().remove(value);
+            }
+
+            RBACSystem.getUserManager().remove(user);
         });
 
         parser.registerCommand("user-search", "Поиск пользователей по фильтрам", (scanner, system) -> {
@@ -319,6 +340,19 @@ public class CommandRegistry {
             System.out.println("Новая роль:" + newRole.toString());
         });
 
+        parser.registerCommand("role-view", "Просмотр роли", (scanner, system) -> {
+            System.out.print("Введите имя роли: ");
+            String roleName = scanner.nextLine();
+
+            Role role = RBACSystem.getRoleManager().findByName(roleName).orElse(null);
+            if (role == null){
+                System.out.println("Роль " + roleName + " не найдена");
+                return;
+            }
+            System.out.println(role.toString());
+
+        });
+
         parser.registerCommand("role-update", "Обновить роль", (scanner, system) -> {
             System.out.print("Введите имя роли: ");
             String roleName = scanner.nextLine();
@@ -404,6 +438,10 @@ public class CommandRegistry {
             System.out.println("\nВедите номер права, которое хотите удалить: ");
             int a = scanner.nextInt();
             scanner.nextLine();
+            if (a > permissions.size() - 1 || a < 0){
+                System.out.println("Неверный выбор");
+                return;
+            }
             RBACSystem.getRoleManager().removePermissionFromRole(roleName, permissions.get(a));
             System.out.println("Роль удалена");
         });
@@ -569,7 +607,7 @@ public class CommandRegistry {
             }
 
             List<RoleAssignment> roleList = RBACSystem.getAssignmentManager().findByUser(user);
-            System.out.println("Поли пользователя: ");
+            System.out.println("Роли пользователя: ");
             int i = 1;
             for (RoleAssignment roleAssignment : roleList){
                 if (roleAssignment instanceof AbstractRoleAssignment) {
@@ -579,7 +617,7 @@ public class CommandRegistry {
                 }
             }
 
-            System.out.println("Выберите роль для назначения");
+            System.out.println("Выберите роль для утилизации");
             int numRole = scanner.nextInt();
             scanner.nextLine();
             if (numRole > roleList.size() || numRole == 0){
@@ -774,22 +812,16 @@ public class CommandRegistry {
                     scanner.nextLine();
                     switch (typeAssigment){
                         case 1:{
-                            List<RoleAssignment> roleList = RBACSystem.getAssignmentManager().findAll();
-                            for (RoleAssignment roleAssignment : roleList){
-                                if (roleAssignment instanceof PermanentAssignment) {
-                                    PermanentAssignment role = (PermanentAssignment) roleAssignment;
-                                    System.out.println(role.summary());
-                                }
+                            List<RoleAssignment> roleList = RBACSystem.getAssignmentManager().findByFilter(AssignmentFilters.byType("PERMANENT"));
+                            for (RoleAssignment value : roleList){
+                                System.out.println(((AbstractRoleAssignment) value).summary());
                             }
                             break;
                         }
                         case 2:{
-                            List<RoleAssignment> roleList = RBACSystem.getAssignmentManager().findAll();
-                            for (RoleAssignment roleAssignment : roleList){
-                                if (roleAssignment instanceof TemporaryAssignment) {
-                                    TemporaryAssignment role = (TemporaryAssignment) roleAssignment;
-                                    System.out.println(role.summary());
-                                }
+                            List<RoleAssignment> roleList = RBACSystem.getAssignmentManager().findByFilter(AssignmentFilters.byType("TEMPORARY"));
+                            for (RoleAssignment value : roleList){
+                                System.out.println(((AbstractRoleAssignment) value).summary());
                             }
                             break;
                         }
@@ -808,22 +840,16 @@ public class CommandRegistry {
                     scanner.nextLine();
                     switch (typeAssigment){
                         case 1:{
-                            List<RoleAssignment> roleList = RBACSystem.getAssignmentManager().getActiveAssignments();
-                            for (RoleAssignment roleAssignment : roleList){
-                                if (roleAssignment instanceof AbstractRoleAssignment) {
-                                    AbstractRoleAssignment role = (AbstractRoleAssignment) roleAssignment;
-                                    System.out.println(role.summary());
-                                }
+                            List<RoleAssignment> roleList = RBACSystem.getAssignmentManager().findByFilter(AssignmentFilters.activeOnly());
+                            for (RoleAssignment value : roleList){
+                                System.out.println(((AbstractRoleAssignment) value).summary());
                             }
                             break;
                         }
                         case 2:{
-                            List<RoleAssignment> roleList = RBACSystem.getAssignmentManager().getExpiredAssignments();
-                            for (RoleAssignment roleAssignment : roleList){
-                                if (roleAssignment instanceof AbstractRoleAssignment) {
-                                    AbstractRoleAssignment role = (AbstractRoleAssignment) roleAssignment;
-                                    System.out.println(role.summary());
-                                }
+                            List<RoleAssignment> roleList = RBACSystem.getAssignmentManager().findByFilter(AssignmentFilters.inactiveOnly());
+                            for (RoleAssignment value : roleList){
+                                System.out.println(((AbstractRoleAssignment) value).summary());
                             }
                             break;
                         }
@@ -883,15 +909,19 @@ public class CommandRegistry {
             List<Role> roleList = RBACSystem.getRoleManager().findAll();
             Set<Permission> permissions = new HashSet<>();
             for(Role role : roleList){
-                Set<Permission> rolePermissions = role.getPermissions();
-                for( Permission value : rolePermissions){
-                    permissions.add(value);
-                }
+                permissions.addAll(role.getPermissions());
             }
+            Map<String, List<Permission>> permissionsByResource = permissions.stream()
+                    .collect(Collectors.groupingBy(Permission::resource));
 
-            for( Permission value : permissions){
-                System.out.println(value.format());
-            }
+            permissionsByResource.forEach((resource, perms) -> {
+                System.out.println("\nResource: " + resource);
+                System.out.println("==================================");
+                for (Permission value : perms){
+                    System.out.println(value.format());
+                }
+            });
+
         });
 
         parser.registerCommand("permissions-check", "Проверить, есть ли у пользователя конкретное право", (scanner, system) -> {
@@ -1129,6 +1159,10 @@ public class CommandRegistry {
                     block = block.replace("[", "").replace("]", "").replace("{", "").replace("}", "");
                     String username = "", fullName = "", email = "";
 
+                    if (block.trim().isEmpty())
+                        continue;
+
+
                     String[] pairs = block.split(",");
                     for (String pair : pairs) {
                         String[] kv = pair.split(":", 2);
@@ -1161,10 +1195,8 @@ public class CommandRegistry {
                         System.out.println("Загружен пользователь: " + newUser.format());
                 }
 
-                String jsonContent = Files.readString(Paths.get("test.json"));
-
                 Pattern rolePattern = Pattern.compile("\"roles\":\\s*\\[(.*?)\"assignments\":\\s*\\[",  Pattern.DOTALL);
-                Matcher roleMatcher = rolePattern.matcher(jsonContent);
+                Matcher roleMatcher = rolePattern.matcher(content);
 
                 if (roleMatcher.find()) {
                     String rolesContent = roleMatcher.group(1).trim();
@@ -1239,7 +1271,7 @@ public class CommandRegistry {
                 }
 
                 Pattern assignmentsPattern =  Pattern.compile( "\"assignments\":\\s*\\[(.*?)\\]\\s*\\}\\s*$",  Pattern.DOTALL);
-                Matcher assignmentsMatcher = assignmentsPattern.matcher(jsonContent);
+                Matcher assignmentsMatcher = assignmentsPattern.matcher(content);
 
                 if (assignmentsMatcher.find()) {
                     String assignmentsContent = assignmentsMatcher.group(1).trim();
@@ -1299,7 +1331,7 @@ public class CommandRegistry {
                             reason = reasonMather.group(1);
                         }
 
-                        AssignmentMetadata metadata = AssignmentMetadata.now(assignedBy, reason);
+                        AssignmentMetadata metadata = AssignmentMetadata.now(system.getCurrentUser(), reason);
                         if (type.equals("PERMANENT")){
                             PermanentAssignment permanentAssignment = new PermanentAssignment(user,role, metadata);
                             RBACSystem.getAssignmentManager().add(permanentAssignment);

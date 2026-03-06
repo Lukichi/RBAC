@@ -1,0 +1,35 @@
+{
+  "users": [
+    {
+      "username": "test",
+      "fullName": "test",
+      "email": "test@mail.ru"
+    }
+  ],
+  "roles": [
+  ],
+  "assignments": [
+    {
+      "type": "PERMANENT",
+      "user": "test",
+      "role": "viewer",
+      "metadata": 
+      {
+        "assignedBy": "2026 03 01 19:51:06",
+        "reason": "test"
+      }
+    },
+    {
+      "type": "TEMPORARY",
+      "user": "test",
+      "role": "manager",
+      "metadata": 
+      {
+        "assignedBy": "2026 03 01 19:51:27",
+        "reason": "test2"
+      },
+      "expiresAt": "2222 11 11 11:11:11",
+      "autoRenew": "false"
+    }
+  ]
+}
