@@ -159,3 +159,13 @@
     - void executeCommand(String commandName, Scanner scanner, RBACSystem system) - выполнение команды
     - void printHelp() - вывод информации (конда - описание)
     - void parseAndExecute(String input, Scanner scanner, RBACSystem system) - строку делим на команды и выполняем
+
+<h1>Подзадача 5: Дополнительные функции</h1>
+
+<h2>5.1. Система валидации</h2>
+
+- boolean isValidUsername(String username) - валидация ника
+- boolean isValidEmail(String email) - валидация почты
+- boolean isValidDate(String date) - валидация даты
+- String normalizeString(String input) - нормализация (удалить пробелы, нижний регистр)
+- void requireNonEmpty(String value, String fieldName) - исключение, если пустая строка

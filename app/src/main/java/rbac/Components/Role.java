@@ -1,5 +1,7 @@
 package rbac.Components;
 
+import rbac.SystemValidation.ValidationUtils;
+
 import java.util.*;
 
 public class Role {
@@ -16,8 +18,7 @@ public class Role {
     }
 
     public Role (String name, String description, Set<Permission> permissions){
-        if (name == null || name.isEmpty())
-            throw new IllegalArgumentException("Name not be empty or null");
+        ValidationUtils.requireNonEmpty(name, "Role name");
 
 
         this.id = "role_" + UUID.randomUUID().toString();

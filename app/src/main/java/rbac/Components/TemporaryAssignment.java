@@ -1,5 +1,7 @@
 package rbac.Components;
 
+import rbac.SystemValidation.ValidationUtils;
+
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -29,9 +31,7 @@ public class TemporaryAssignment extends  AbstractRoleAssignment{
 
         super(user, role, metadata);
 
-        if (expiresAt == null || expiresAt.isEmpty()) {
-            throw new IllegalArgumentException("ExpiresAt cannot be null or empty");
-        }
+        ValidationUtils.requireNonEmpty(expiresAt, "ExpiresAt");
 
         if(!checkDateFormat(expiresAt))
             throw new IllegalArgumentException("ExpiresAt cannot be null or empty");
@@ -41,12 +41,10 @@ public class TemporaryAssignment extends  AbstractRoleAssignment{
     }
 
     private boolean checkDateFormat(String date){
-        try {
-            LocalDateTime.parse(date, DATE_FORMAT);
+        if (ValidationUtils.isValidDate(date))
             return true;
-        } catch (DateTimeParseException e1) {
+        else
             return false;
-        }
     }
 
     @Override
@@ -70,8 +68,7 @@ public class TemporaryAssignment extends  AbstractRoleAssignment{
     }
 
     public void extend(String newExpirationDate){
-        if (newExpirationDate == null || newExpirationDate.isEmpty())
-            throw new IllegalArgumentException("ExpiresAt cannot be null or empty");
+        ValidationUtils.requireNonEmpty(newExpirationDate, "ExpiresAt");
 
         if (isActive(newExpirationDate))
             throw new IllegalArgumentException("New date must be after current date: " + this.expiresAt + " | " + newExpirationDate);

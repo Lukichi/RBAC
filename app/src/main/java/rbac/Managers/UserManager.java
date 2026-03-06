@@ -3,6 +3,7 @@ package rbac.Managers;
 import rbac.Filters.UserFilter;
 import rbac.Components.Repository;
 import rbac.Components.User;
+import rbac.SystemValidation.ValidationUtils;
 
 import java.util.*;
 import java.util.regex.Pattern;
@@ -10,7 +11,6 @@ import java.util.regex.Pattern;
 public class UserManager implements Repository<User> {
 
     private static final Pattern FN_PATTER = Pattern.compile("^[a-zA-Z\\s]+$");
-    private static final Pattern EM_PATTER = Pattern.compile("^[^@]+@[^@]+\\.[^@]+$");
 
     private Map<String, User> usersData = new HashMap<>();
 
@@ -120,7 +120,7 @@ public class UserManager implements Repository<User> {
         if (newEmail.isEmpty())
             newE = user.email();
         else {
-            if (!EM_PATTER.matcher((newEmail)).matches())
+            if (!ValidationUtils.isValidEmail(newEmail))
                 throw new IllegalArgumentException("Invalid format email");
             newE = newEmail;
         }

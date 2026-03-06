@@ -13,14 +13,14 @@ import rbac.Managers.UserManager;
 import rbac.Sorters.AssignmentSorters;
 import rbac.Sorters.RoleSorters;
 import rbac.Sorters.UserSorters;
+import rbac.SystemValidation.ValidationUtils;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 class AppTest {
@@ -521,21 +521,6 @@ class AppTest {
             assertEquals(result, sortedUsers, "Записи должны совпадать");
         }
 
-//        AssignmentMetadata metData = AssignmentMetadata.now("ADMIN", "Important reason");
-//        AssignmentMetadata metData2 = AssignmentMetadata.now("admin-report", "Important reason");
-//        DateTimeFormatter dataFormat = DateTimeFormatter.ofPattern("yyyy MM dd HH:mm:ss");
-//        TemporaryAssignment temp1 = new TemporaryAssignment(users.get(2), roles.get(2), new AssignmentMetadata("ADMIN", LocalDateTime.now().plusHours(3).format(dataFormat), "Important reason"));
-//        temp1.extend(LocalDateTime.now().plusHours(3).format(dataFormat));
-//        TemporaryAssignment temp2 = new TemporaryAssignment(users.get(3), roles.get(2), new AssignmentMetadata("admin-report", LocalDateTime.now().plusHours(1).format(dataFormat), "Important reason"));
-//        temp2.extend(LocalDateTime.now().plusHours(1).format(dataFormat));
-//        assignmentList = List.of(
-//                new PermanentAssignment(users.get(0), roles.get(0), metData),   // admin
-//                new TemporaryAssignment(users.get(1), roles.get(1), metData),   // admin-report
-//                temp1,   // user
-//                temp2,  // user
-//                new TemporaryAssignment(users.get(4), roles.get(3), metData2)   // guest
-//                );
-
         @Test
         void sortAssigmentByUsername(){
             List<AbstractRoleAssignment> sortedUsers = assignmentList.stream().sorted(AssignmentSorters.byUsername()).collect(Collectors.toList());
@@ -710,18 +695,49 @@ class AppTest {
             String resultStatictic = "Count users: " + 1 + "\nCount roles: " + 1 +"\nCount assignments: " + 1;
             assertEquals(resultStatictic, RBACSystem.generateStatistics());
         }
+    }
+
+    @Nested
+    class validTests {
 
         @Test
-        void testCommand(){
-            Scanner scanner = new Scanner(System.in);
+        void testValidUsername(){
+            assertEquals(true, ValidationUtils.isValidUsername("admin"));
+            assertEquals(true, ValidationUtils.isValidUsername("test2"));
+            assertEquals(false, ValidationUtils.isValidUsername("error@"));
+            assertEquals(false, ValidationUtils.isValidUsername(""));
+        }
 
-            while (true) {
-                String command = scanner.nextLine();
+        @Test
+        void testValidEmail(){
+            assertEquals(true, ValidationUtils.isValidEmail("admin@mail.ru"));
+            assertEquals(true, ValidationUtils.isValidEmail("test$2@gmail.com"));
+            assertEquals(false, ValidationUtils.isValidEmail(""));
+            assertEquals(false, ValidationUtils.isValidEmail("text@text@.ru"));
+        }
 
-                System.out.println(command);
-            }
+        @Test
+        void testValidDate(){
+            assertEquals(true, ValidationUtils.isValidDate("2026 03 06 11:11:00"));
+            assertEquals(false, ValidationUtils.isValidDate(""));
+            assertEquals(false, ValidationUtils.isValidDate("11.11 09/01/26"));
+            assertEquals(false, ValidationUtils.isValidDate("2026 03 06 11:11"));
+        }
 
+        @Test
+        void testNormalize(){
+            assertEquals("text", ValidationUtils.normalizeString("        text        "));
+            assertEquals("", ValidationUtils.normalizeString(""));
+            assertEquals("test", ValidationUtils.normalizeString("TEST"));
+            assertEquals("test", ValidationUtils.normalizeString("\ntest\n"));
+        }
 
+        @Test
+        void testThrows(){
+            assertThrows(IllegalArgumentException.class, () -> {ValidationUtils.requireNonEmpty("", "test");});
+            assertThrows(IllegalArgumentException.class, () -> {ValidationUtils.requireNonEmpty("\n\n", "test");});
+            assertThrows(IllegalArgumentException.class, () -> {ValidationUtils.requireNonEmpty("           ", "test");});
+            assertDoesNotThrow(() -> {ValidationUtils.requireNonEmpty("text", "test");});
         }
     }
 

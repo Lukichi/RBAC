@@ -1,5 +1,7 @@
 package rbac.Components;
 
+import rbac.SystemValidation.ValidationUtils;
+
 import java.util.regex.Pattern;
 
 public record Permission(String name, String resource, String description) {
@@ -37,8 +39,8 @@ public record Permission(String name, String resource, String description) {
         if (namePattern == null || resourcePattern == null)
             return false;
 
-        boolean flag1 = this.name.contains(namePattern.toUpperCase());
-        boolean flag2 = this.resource.contains(resourcePattern);
+        boolean flag1 = this.name.contains(ValidationUtils.normalizeString(namePattern).toUpperCase());
+        boolean flag2 = this.resource.contains(ValidationUtils.normalizeString(resourcePattern));
 
         return flag1 && flag2;
     }
