@@ -169,3 +169,20 @@
 - boolean isValidDate(String date) - валидация даты
 - String normalizeString(String input) - нормализация (удалить пробелы, нижний регистр)
 - void requireNonEmpty(String value, String fieldName) - исключение, если пустая строка
+
+<h2>5.2. Система логирования событий</h2>
+
+- AuditEntry - запись для логов
+  - timestamp - время
+  - action - что произошло
+  - performer - автор исполнения
+  - target - над чем выполнилось (ресурс)
+  - details - прочая информация
+- AuditLog - реализация логов
+  - List<AuditEntry> entries — записи аудита (событий)
+  - void log(String action, String performer, String target, String details) - создать новую запись
+  - List<AuditEntry> getAll() - получить все записи
+  - List<AuditEntry> getByPerformer(String performer) - записи конкретного автора
+  - List<AuditEntry> getByAction(String action) - записи определенного действия
+  - void printLog() - вывод всех записей
+  - void saveToFile(String filename) - сохранить в файл (JSON)

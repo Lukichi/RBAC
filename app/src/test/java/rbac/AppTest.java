@@ -13,6 +13,8 @@ import rbac.Managers.UserManager;
 import rbac.Sorters.AssignmentSorters;
 import rbac.Sorters.RoleSorters;
 import rbac.Sorters.UserSorters;
+import rbac.SystemValidation.AuditEntry;
+import rbac.SystemValidation.AuditLog;
 import rbac.SystemValidation.ValidationUtils;
 
 import java.time.LocalDateTime;
@@ -21,6 +23,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
 class AppTest {
@@ -739,6 +743,86 @@ class AppTest {
             assertThrows(IllegalArgumentException.class, () -> {ValidationUtils.requireNonEmpty("           ", "test");});
             assertDoesNotThrow(() -> {ValidationUtils.requireNonEmpty("text", "test");});
         }
+    }
+
+    @Nested
+    class testLog {
+
+        record testLogReord (String action, String performer, String target, String details){};
+
+        AuditLog logs = new AuditLog();
+
+        @BeforeEach
+        void initLog() {
+            logs.log("Create", "admin", "user", "Create test user");
+            logs.log("Create", "admin-reporter", "REPORT", "");
+            logs.log("UPDATE", "admin", "user", null);
+        }
+
+        @Test
+        void testAdd() {
+            assertDoesNotThrow(() -> {logs.log("Create", "admin", "user", "Create test user");});
+            assertDoesNotThrow(() -> {logs.log("Create", "admin-reporter", "REPORT", "");});
+            assertDoesNotThrow(() -> {logs.log("UPDATE", "admin", "user", null);});
+            assertThrows(IllegalArgumentException.class, () -> {logs.log("  ", "admin", "user", null);});
+            assertThrows(IllegalArgumentException.class, () -> {logs.log("create", null, "user", null);});
+        }
+
+        @Test
+        void testGetAllLog() {
+            List<AuditEntry> allLogs = new ArrayList<>();
+            allLogs.add(new AuditEntry("11","CREATE", "admin", "user", "Create test user"));
+            allLogs.add(new AuditEntry("11","CREATE", "admin-reporter", "report", ""));
+            allLogs.add(new AuditEntry("11","UPDATE", "admin", "user", null));
+
+            List<AuditEntry> logList = logs.getAll();
+
+            List<testLogReord> reseltRecords = new ArrayList<>();
+            List<testLogReord> logsRecord = new ArrayList<>();
+            for (AuditEntry value : allLogs) {
+                reseltRecords.add(new testLogReord(value.action(), value.performer(), value.target(), value.details()));
+            }
+            for (AuditEntry value : logList) {
+                logsRecord.add(new testLogReord(value.action(), value.performer(), value.target(), value.details()));
+            }
+
+            assertEquals(reseltRecords, logsRecord);
+        }
+
+        @Test
+        void testGetPerformLog() {
+            List<AuditEntry> allLogs = new ArrayList<>();
+            allLogs.add(new AuditEntry("11","CREATE", "admin", "user", "Create test user"));
+            allLogs.add(new AuditEntry("11","CREATE", "admin-reporter", "report", ""));
+            allLogs.add(new AuditEntry("11","UPDATE", "admin", "user", null));
+
+            List<AuditEntry> logList = logs.getByPerformer("admin");
+
+            List<testLogReord> reseltRecords = new ArrayList<>();
+            reseltRecords.add(new testLogReord(allLogs.get(0).action(), allLogs.get(0).performer(), allLogs.get(0).target(), allLogs.get(0).details()));
+            reseltRecords.add(new testLogReord(allLogs.get(2).action(), allLogs.get(2).performer(), allLogs.get(2).target(), allLogs.get(2).details()));
+
+            List<testLogReord> logsRecord = new ArrayList<>();
+            for (AuditEntry value : logList) {
+                logsRecord.add(new testLogReord(value.action(), value.performer(), value.target(), value.details()));
+            }
+
+            assertEquals(reseltRecords, logsRecord);
+
+            logList = logs.getByPerformer("ADMIN-reporter");
+            logsRecord.clear();
+            for (AuditEntry value : logList) {
+                logsRecord.add(new testLogReord(value.action(), value.performer(), value.target(), value.details()));
+            }
+            reseltRecords.clear();
+            reseltRecords.add(new testLogReord(allLogs.get(1).action(), allLogs.get(1).performer(), allLogs.get(1).target(), allLogs.get(1).details()));
+
+            assertEquals(reseltRecords, logsRecord);
+
+            logs.printLog();
+        }
+
+
     }
 
 }

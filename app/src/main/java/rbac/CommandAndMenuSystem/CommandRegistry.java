@@ -17,6 +17,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static java.lang.System.exit;
+import static java.lang.System.setOut;
 
 public class CommandRegistry {
 
@@ -42,6 +43,8 @@ public class CommandRegistry {
             int count1 = RBACSystem.getUserManager().count();
             RBACSystem.getUserManager().add(newUser);
             int count2 = RBACSystem.getUserManager().count();
+
+            RBACSystem.getLogSystem().log("create", system.getCurrentUser(), "user", "User " +  system.getCurrentUser() + " create new user " + username);
 
             if (count1 < count2){
                 System.out.println("Пользователь успешно добавлен.");
@@ -108,6 +111,7 @@ public class CommandRegistry {
             else {
                 User.validate(username, fullName, email);
                 RBACSystem.getUserManager().update(username, fullName, email);
+                RBACSystem.getLogSystem().log("update", system.getCurrentUser(), "user", "User " +  system.getCurrentUser() + " update data user " + username);
             }
         });
 
@@ -145,6 +149,7 @@ public class CommandRegistry {
             }
 
             RBACSystem.getUserManager().remove(user);
+            RBACSystem.getLogSystem().log("delete", system.getCurrentUser(), "user", "User " +  system.getCurrentUser() + " delete user " + username);
         });
 
         parser.registerCommand("user-search", "Поиск пользователей по фильтрам", (scanner, system) -> {
@@ -338,6 +343,7 @@ public class CommandRegistry {
             Role newRole = new Role(roleName, roleDescription);
             RBACSystem.getRoleManager().add(newRole);
             System.out.println("Новая роль:" + newRole.toString());
+            RBACSystem.getLogSystem().log("create", system.getCurrentUser(), "role", "User " +  system.getCurrentUser() + " create role " + roleName);
         });
 
         parser.registerCommand("role-view", "Просмотр роли", (scanner, system) -> {
@@ -379,6 +385,7 @@ public class CommandRegistry {
             RBACSystem.getRoleManager().remove(role);
             RBACSystem.getRoleManager().add(newRole);
             System.out.println("Новая роль:" + newRole.toString());
+            RBACSystem.getLogSystem().log("update", system.getCurrentUser(), "role", "User " +  system.getCurrentUser() + " update role " + roleName);
         });
 
         parser.registerCommand("role-delete", "Удалить роль", (scanner, system) -> {
@@ -393,6 +400,7 @@ public class CommandRegistry {
             }
             RBACSystem.getRoleManager().remove(role);
             System.out.println("Роль удалена");
+            RBACSystem.getLogSystem().log("delete", system.getCurrentUser(), "role", "User " +  system.getCurrentUser() + " delete role " + roleName);
         });
 
         parser.registerCommand("role-add-permission", "Добавить права у роли", (scanner, system) -> {
@@ -415,6 +423,8 @@ public class CommandRegistry {
 
             Permission permission = new Permission(permissionName, permissionResource, permissionDescription);
             RBACSystem.getRoleManager().addPermissionToRole(roleName, permission);
+
+            RBACSystem.getLogSystem().log("Add", system.getCurrentUser(), "permission", "User " +  system.getCurrentUser() + " add new permission for role " + roleName);
 
             System.out.println("Право доступа успешно добавлено");
         });
@@ -443,7 +453,8 @@ public class CommandRegistry {
                 return;
             }
             RBACSystem.getRoleManager().removePermissionFromRole(roleName, permissions.get(a));
-            System.out.println("Роль удалена");
+            System.out.println("Право роли удалено");
+            RBACSystem.getLogSystem().log("delete", system.getCurrentUser(), "permission", "User " +  system.getCurrentUser() + " delete permission for role " + roleName);
         });
 
         parser.registerCommand("role-search", "Найти роль по фильтру", (scanner, system) -> {
@@ -558,6 +569,8 @@ public class CommandRegistry {
                     PermanentAssignment permanentAssignment = new PermanentAssignment(user, roleList.get(numRole - 1), metadata);
                     RBACSystem.getAssignmentManager().add(permanentAssignment);
                     System.out.println("Роль назначена : " + permanentAssignment.summary());
+                    RBACSystem.getLogSystem().log("appointed", system.getCurrentUser(), "assignment", "User " +  system.getCurrentUser()
+                            + " appointed PERMANENT role" + roleList.get(numRole - 1).getName() + " for user " + username);
                     break;
                 }
                 case 2: {
@@ -585,6 +598,8 @@ public class CommandRegistry {
                         RBACSystem.getAssignmentManager().add(temporaryAssignment);
                         System.out.println("Введенная дата уже прошла, поэтому роль назначена до текущей даты: \n" + temporaryAssignment.summary());
                     }
+                    RBACSystem.getLogSystem().log("appointed", system.getCurrentUser(), "assignment", "User " +  system.getCurrentUser()
+                            + " appointed TEMPORARY role" + roleList.get(numRole - 1).getName() + " for user " + username);
 
                     break;
                 }
@@ -637,11 +652,15 @@ public class CommandRegistry {
                     case 1: {
                         RBACSystem.getAssignmentManager().remove(roleAssignment);
                         System.out.println("Роль успешно отозвана");
+                        RBACSystem.getLogSystem().log("recall", system.getCurrentUser(), "assignment", "User " +  system.getCurrentUser()
+                                + " recall role for user " + username);
                         break;
                     }
                     case 2:{
                         RBACSystem.getAssignmentManager().revokeAssignment(roleAssignment.assignmentId());
                         System.out.println("Роль успешно аннулирована");
+                        RBACSystem.getLogSystem().log("cancel", system.getCurrentUser(), "assignment", "User " +  system.getCurrentUser()
+                                + " recall role for user " + username);
                         break;
                     }
                     default: {
@@ -782,6 +801,8 @@ public class CommandRegistry {
 
             RBACSystem.getAssignmentManager().extendTemporaryAssignment(resRoles.get(numRole - 1).assignmentId(), date);
             System.out.println("Время обновлено");
+            RBACSystem.getLogSystem().log("update", system.getCurrentUser(), "assignment", "User " +  system.getCurrentUser()
+                    + " update time role " + roleName +" for " + username);
         });
 
         parser.registerCommand("assignment-search", "Поиск назначений по фильтрам", (scanner, system) -> {
@@ -1049,9 +1070,9 @@ public class CommandRegistry {
                     User user = userList.get(i);
 
                     writer.write("    {\n");
-                    writer.write("      \"username\": \"" + toJson(user.username()) + "\",\n");
-                    writer.write("      \"fullName\": \"" + toJson(user.fullName()) + "\",\n");
-                    writer.write("      \"email\": \"" + toJson(user.email()) + "\"\n");
+                    writer.write("      \"username\": \"" + user.username() + "\",\n");
+                    writer.write("      \"fullName\": \"" + user.fullName() + "\",\n");
+                    writer.write("      \"email\": \"" + user.email() + "\"\n");
                     writer.write("    }");
 
                     if (i < userList.size() - 1) {
@@ -1067,8 +1088,8 @@ public class CommandRegistry {
                     Role role = roleList.get(i);
 
                     writer.write("    {\n");
-                    writer.write("      \"name\": \"" + toJson(role.getName()) + "\",\n");
-                    writer.write("      \"description\": \"" + toJson(role.getDescription()) + "\",\n");
+                    writer.write("      \"name\": \"" + role.getName() + "\",\n");
+                    writer.write("      \"description\": \"" + role.getDescription() + "\",\n");
                     writer.write("      \"permissions\": [\n");
 
                     Set<Permission> permissions = role.getPermissions();
@@ -1192,7 +1213,9 @@ public class CommandRegistry {
 
                     User newUser = new User(username, fullName, email);
                     RBACSystem.getUserManager().add(newUser);
-                        System.out.println("Загружен пользователь: " + newUser.format());
+                    System.out.println("Загружен пользователь: " + newUser.format());
+                    RBACSystem.getLogSystem().log("CREATE", system.getCurrentUser(), "user", "User " +  system.getCurrentUser()
+                            + " add new user " + username);
                 }
 
                 Pattern rolePattern = Pattern.compile("\"roles\":\\s*\\[(.*?)\"assignments\":\\s*\\[",  Pattern.DOTALL);
@@ -1267,6 +1290,8 @@ public class CommandRegistry {
                         Role newRole = new Role(roleName, roleDis, permissions);
                         RBACSystem.getRoleManager().add(newRole);
                         System.out.println("Добавлена роль: " + newRole.toString());
+                        RBACSystem.getLogSystem().log("CREATE", system.getCurrentUser(), "role", "User " +  system.getCurrentUser()
+                                + " add new role " + roleName);
                     }
                 }
 
@@ -1336,6 +1361,8 @@ public class CommandRegistry {
                             PermanentAssignment permanentAssignment = new PermanentAssignment(user,role, metadata);
                             RBACSystem.getAssignmentManager().add(permanentAssignment);
                             System.out.println("Назначение добавлено: " + permanentAssignment.summary());
+                            RBACSystem.getLogSystem().log("appointed", system.getCurrentUser(), "assignment", "User " +  system.getCurrentUser()
+                                    + " appointed PERMANENT role" + roleName + " for user " + username);
                         }
                         else if(type.equals("TEMPORARY")){
                             String expiresAt = "";
@@ -1360,6 +1387,8 @@ public class CommandRegistry {
                             TemporaryAssignment temporaryAssignment = new TemporaryAssignment(user, role, metadata, expiresAt, false);
                             RBACSystem.getAssignmentManager().add(temporaryAssignment);
                             System.out.println("Назначение добавлено: " + temporaryAssignment.summary());
+                            RBACSystem.getLogSystem().log("appointed", system.getCurrentUser(), "assignment", "User " +  system.getCurrentUser()
+                                    + " appointed TEMPORARY role" + roleName + " for user " + username);
                         }
                         else {
                             System.out.println("Неизвестный тип назначения " + type + ". Создание назвачения отменено");
@@ -1376,19 +1405,31 @@ public class CommandRegistry {
             } catch (Exception e) {
                 System.out.println("Ошибка парсинга JSON: " + e.getMessage());
             }
-
-
         });
 
+        parser.registerCommand("audit-log", "Вывод логов и сохранение", (scanner, system) -> {
+            System.out.println("Логи:");
+            RBACSystem.getLogSystem().printLog();
 
-    }
+            System.out.println("\n\nДля сохранения логов напишите yes:");
+            String flag = scanner.nextLine();
+            switch (flag){
+                case "yes": {
+                    System.out.println("\n\nВведите имя файла для сохранения:");
+                    String filename = scanner.nextLine();
+                    RBACSystem.getLogSystem().saveToFile(filename);
+                    if (!filename.endsWith(".json")) {
+                        filename += ".json";
+                    }
+                    System.out.println("Логи сохранены в файл " + filename);
+                    break;
+                }
+                default: {
+                    System.out.println("Сохранение логов отменено.");
+                    break;
+                }
+            }
+        });
 
-    private static String toJson(String str) {
-        if (str == null) return "";
-        return str.replace("\\", "\\\\")
-                .replace("\"", "\\\"")
-                .replace("\n", "\\n")
-                .replace("\r", "\\r")
-                .replace("\t", "\\t");
     }
 }
