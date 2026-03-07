@@ -186,3 +186,10 @@
   - List<AuditEntry> getByAction(String action) - записи определенного действия
   - void printLog() - вывод всех записей
   - void saveToFile(String filename) - сохранить в файл (JSON)
+
+<h2>5.3. Экспорт отчётов</h2>
+
+- String generateUserReport(UserManager userManager, AssignmentManager assignmentManager) — отчёт по всем пользователям с их ролями
+- String generateRoleReport(RoleManager roleManager, AssignmentManager assignmentManager) — отчёт по ролям с количеством пользователей
+- String generatePermissionMatrix(UserManager userManager, AssignmentManager assignmentManager) — матрица прав (пользователи × ресурсы)
+- void exportToFile(String report, String filename) — сохранение отчёта в файл (txt)

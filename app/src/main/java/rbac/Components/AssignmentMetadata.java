@@ -7,7 +7,7 @@ import java.time.format.DateTimeFormatter;
 
 public record AssignmentMetadata(String assignedBy, String assignedAt, String reason) {
 
-    private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy MM dd HH:mm:ss");
+    private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     public AssignmentMetadata{
         ValidationUtils.requireNonEmpty(ValidationUtils.normalizeString(assignedBy), "AssignedBy");

@@ -4,7 +4,7 @@ import rbac.Components.*;
 import rbac.Managers.AssignmentManager;
 import rbac.Managers.RoleManager;
 import rbac.Managers.UserManager;
-import rbac.SystemValidation.AuditLog;
+import rbac.LogSystem.AuditLog;
 
 import java.util.HashSet;
 import java.util.Optional;

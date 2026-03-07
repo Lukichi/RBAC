@@ -1,0 +1,25 @@
+
+
+test:
+Role: manager [ID: role_8e6b03ed-645d-4347-97d4-a48a0a5edcd5]
+Description: Manage reports
+Permissions (2)
+    - READ on report: Read report
+    - WRITE on report: Write report
+Role: viewer [ID: role_7190ced9-b93f-45de-a043-16c28a6115d4]
+Description: View users
+Permissions (1)
+    - READ on users: Read users
+============================================================
+
+
+admin:
+Role: admin [ID: role_cc0d5511-8c41-4037-a32c-1b272a6059e5]
+Description: Chief admin
+Permissions (5)
+    - READ on users: Read users
+    - DELETE on users: Delete users
+    - DELETE on report: Delete report
+    - READ on report: Read report
+    - WRITE on report: Write report
+============================================================

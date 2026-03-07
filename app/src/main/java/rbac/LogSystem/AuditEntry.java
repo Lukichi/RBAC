@@ -1,4 +1,4 @@
-package rbac.SystemValidation;
+package rbac.LogSystem;
 
 public record AuditEntry(String timestamp,
                          String action,

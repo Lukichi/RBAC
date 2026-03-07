@@ -9,7 +9,7 @@ import java.time.temporal.ChronoUnit;
 
 public class TemporaryAssignment extends  AbstractRoleAssignment{
 
-    private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy MM dd HH:mm:ss");
+    private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     private String expiresAt;
     private boolean autoRenew;

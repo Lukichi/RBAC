@@ -1,4 +1,4 @@
-package rbac.SystemValidation;
+package rbac.LogSystem;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Locale;
 
 public class AuditLog {
-    private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy MM dd HH:mm:ss");
+    private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     List<AuditEntry> entries = new ArrayList<>();
 

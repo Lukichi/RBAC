@@ -4,6 +4,7 @@ import rbac.Components.*;
 import rbac.Filters.AssignmentFilters;
 import rbac.Filters.RoleFilters;
 import rbac.Filters.UserFilters;
+import rbac.LogSystem.ReportGenerator;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -21,14 +22,34 @@ import static java.lang.System.setOut;
 
 public class CommandRegistry {
 
-    private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy MM dd HH:mm:ss");
+    private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     public static void registerCommands(CommandParser parser) {
         parser.registerCommand("user-list", "Вывести всех пользователей", (scanner, system) -> {
-            List<User> userList = system.getUserManager().findAll();
-            for(User value : userList){
-                System.out.println(value.format());
+            System.out.println("Вывести всех пользователей (1) или использовать параметры (0):");
+            int type = scanner.nextInt();
+            scanner.nextLine();
+            switch (type) {
+                case 1: {
+                    System.out.println(String.format("%-20s | %-40s | %-30s", "username", "full name", "email"));
+                    System.out.println("-".repeat(100));
+                    List<User> userList = system.getUserManager().findAll();
+                    for(User value : userList){
+                        System.out.println(String.format("%-20s | %-40s | %-30s", value.username(), value.fullName(), value.email()));
+                        System.out.println("-".repeat(100));
+                    }
+                    break;
+                }
+                case 0: {
+                    parser.parseAndExecute("user-search", scanner, system);
+                    break;
+                }
+                default:{
+                    System.out.println("Ошибка выбора");
+                    break;
+                }
             }
+
         });
 
         parser.registerCommand("user-create", "Создать нового пользователя", (scanner, system) -> {
@@ -1430,6 +1451,82 @@ public class CommandRegistry {
                 }
             }
         });
+
+        parser.registerCommand("report-users", "Вывести / сохранить (в txt) отчёт по пользователям", (scanner, system) -> {
+            System.out.println("Для вывода отчета напишите 1, для сохранения в файл 0:");
+            int type = scanner.nextInt();
+            scanner.nextLine();
+
+            switch (type) {
+                case 1: {
+                    String text = ReportGenerator.generateUserReport(RBACSystem.getUserManager(), RBACSystem.getAssignmentManager());
+                    System.out.println(text);
+                    break;
+                }
+                case 0: {
+                    System.out.println("Введите имя файла: ");
+                    String filename = scanner.nextLine();
+                    String text = ReportGenerator.generateUserReport(RBACSystem.getUserManager(), RBACSystem.getAssignmentManager());
+                    ReportGenerator.exportToFile(text, filename);
+                    break;
+                }
+                default: {
+                    System.out.println("Неверный ввод.");
+                    break;
+                }
+            }
+        });
+
+        parser.registerCommand("report-roles", "Вывести / сохранить (в txt) отчёт по ролям", (scanner, system) -> {
+            System.out.println("Для вывода отчета напишите 1, для сохранения в файл 0:");
+            int type = scanner.nextInt();
+            scanner.nextLine();
+
+            switch (type) {
+                case 1: {
+                    String text = ReportGenerator.generateRoleReport(RBACSystem.getRoleManager(), RBACSystem.getAssignmentManager());
+                    System.out.println(text);
+                    break;
+                }
+                case 0: {
+                    System.out.println("Введите имя файла: ");
+                    String filename = scanner.nextLine();
+                    String text = ReportGenerator.generateRoleReport(RBACSystem.getRoleManager(), RBACSystem.getAssignmentManager());
+                    ReportGenerator.exportToFile(text, filename);
+                    break;
+                }
+                default: {
+                    System.out.println("Неверный ввод.");
+                    break;
+                }
+            }
+        });
+
+        parser.registerCommand("report-matrix", "Вывести / сохранить (в txt) отчёт по правам", (scanner, system) -> {
+            System.out.println("Для вывода отчета напишите 1, для сохранения в файл 0:");
+            int type = scanner.nextInt();
+            scanner.nextLine();
+
+            switch (type) {
+                case 1: {
+                    String text = ReportGenerator.generatePermissionMatrix(RBACSystem.getUserManager(), RBACSystem.getAssignmentManager());
+                    System.out.println(text);
+                    break;
+                }
+                case 0: {
+                    System.out.println("Введите имя файла: ");
+                    String filename = scanner.nextLine();
+                    String text = ReportGenerator.generatePermissionMatrix(RBACSystem.getUserManager(), RBACSystem.getAssignmentManager());
+                    ReportGenerator.exportToFile(text, filename);
+                    break;
+                }
+                default: {
+                    System.out.println("Неверный ввод.");
+                    break;
+                }
+            }
+        });
+
 
     }
 }

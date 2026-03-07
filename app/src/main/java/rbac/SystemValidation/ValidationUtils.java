@@ -8,7 +8,7 @@ public class ValidationUtils {
     private static final Pattern UN_PATTER = Pattern.compile("^[a-zA-Z0-9_]{3,20}$");
     private static final Pattern FN_PATTER = Pattern.compile("^[a-zA-Z\\s]+$");
     private static final Pattern EM_PATTER = Pattern.compile("^[^@]+@[^@]+\\.[^@]+$");
-    private static final Pattern DATE_PATTERN =  Pattern.compile("^\\d{4} \\d{2} \\d{2} \\d{2}:\\d{2}:\\d{2}$");
+    private static final Pattern DATE_PATTERN =  Pattern.compile("^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}$");
 
     static public boolean isValidUsername(String username){
         if (username == null || username.isEmpty())
