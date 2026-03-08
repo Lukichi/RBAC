@@ -11,6 +11,7 @@ import rbac.LogSystem.ReportGenerator;
 import rbac.Managers.AssignmentManager;
 import rbac.Managers.RoleManager;
 import rbac.Managers.UserManager;
+import rbac.OtherFunctional.FormatUtils;
 import rbac.Sorters.AssignmentSorters;
 import rbac.Sorters.RoleSorters;
 import rbac.Sorters.UserSorters;
@@ -69,8 +70,7 @@ class AppTest {
                 new TemporaryAssignment(users.get(1), roles.get(1), metData),   // admin-report
                 temp1,   // user
                 temp2,  // user
-                new TemporaryAssignment(users.get(4), roles.get(3), metData2),   // guest
-                new TemporaryAssignment(users.get(0), roles.get(3), metData2)   // guest
+                new TemporaryAssignment(users.get(4), roles.get(3), metData2)  // guest
         );
 
 //        System.out.println("\nДанные для теста" );
@@ -251,6 +251,27 @@ class AppTest {
     @Nested
     class assigmentFilterTest{
 
+        private  List<AbstractRoleAssignment> assignmentAssigList;
+
+        @BeforeEach
+        void initData() {
+            AssignmentMetadata metData = AssignmentMetadata.now("ADMIN", "Important reason");
+            AssignmentMetadata metData2 = AssignmentMetadata.now("admin-report", "Important reason");
+            DateTimeFormatter dataFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            TemporaryAssignment temp1 = new TemporaryAssignment(users.get(2), roles.get(2), new AssignmentMetadata("ADMIN", LocalDateTime.now().plusHours(3).format(dataFormat), "Important reason"));
+            temp1.extend(LocalDateTime.now().plusHours(3).format(dataFormat));
+            TemporaryAssignment temp2 = new TemporaryAssignment(users.get(3), roles.get(2), new AssignmentMetadata("admin-report", LocalDateTime.now().plusHours(1).format(dataFormat), "Important reason"));
+            temp2.extend(LocalDateTime.now().plusHours(1).format(dataFormat));
+            assignmentAssigList = List.of(
+                    new PermanentAssignment(users.get(0), roles.get(0), metData),   // admin
+                    new TemporaryAssignment(users.get(1), roles.get(1), metData),   // admin-report
+                    temp1,   // user
+                    temp2,  // user
+                    new TemporaryAssignment(users.get(4), roles.get(3), metData2),   // guest
+                    new TemporaryAssignment(users.get(0), roles.get(3), metData2)
+            );
+        }
+
         @Test
         void testAssigmentUser(){
             AssignmentFilter filter1 = AssignmentFilters.byUser(users.get(0));
@@ -391,7 +412,7 @@ class AppTest {
 
         @Test
         void testAssigmentAfterAssigmenting(){
-            DateTimeFormatter dataFormat = DateTimeFormatter.ofPattern("yyyy MM dd HH:mm:ss");
+            DateTimeFormatter dataFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
             AssignmentFilter filter = AssignmentFilters.assignedAfter(LocalDateTime.now().plusHours(2).format(dataFormat));
 
             List<AbstractRoleAssignment> resultFilter = assignmentList.stream().filter(filter::test).toList();
@@ -413,7 +434,7 @@ class AppTest {
 
         @Test
         void testAssigmentBeforeAssigmenting(){
-            DateTimeFormatter dataFormat = DateTimeFormatter.ofPattern("yyyy MM dd HH:mm:ss");
+            DateTimeFormatter dataFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
             AssignmentFilter filter = AssignmentFilters.expiringBefore(LocalDateTime.now().plusHours(2).format(dataFormat));
 
             List<AbstractRoleAssignment> resultFilter = assignmentList.stream().filter(filter::test).toList();
@@ -724,7 +745,7 @@ class AppTest {
 
         @Test
         void testValidDate(){
-            assertEquals(true, ValidationUtils.isValidDate("2026 03 06 11:11:00"));
+            assertEquals(true, ValidationUtils.isValidDate("2026-03-06 11:11:00"));
             assertEquals(false, ValidationUtils.isValidDate(""));
             assertEquals(false, ValidationUtils.isValidDate("11.11 09/01/26"));
             assertEquals(false, ValidationUtils.isValidDate("2026 03 06 11:11"));
@@ -832,8 +853,26 @@ class AppTest {
         RoleManager roleManager = new RoleManager();
         AssignmentManager assignmentManager = new AssignmentManager();
 
+        private  List<AbstractRoleAssignment> assignmentRepList;
+
         @BeforeEach
         void initData(){
+            AssignmentMetadata metData = AssignmentMetadata.now("ADMIN", "Important reason");
+            AssignmentMetadata metData2 = AssignmentMetadata.now("admin-report", "Important reason");
+            DateTimeFormatter dataFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            TemporaryAssignment temp1 = new TemporaryAssignment(users.get(2), roles.get(2), new AssignmentMetadata("ADMIN", LocalDateTime.now().plusHours(3).format(dataFormat), "Important reason"));
+            temp1.extend(LocalDateTime.now().plusHours(3).format(dataFormat));
+            TemporaryAssignment temp2 = new TemporaryAssignment(users.get(3), roles.get(2), new AssignmentMetadata("admin-report", LocalDateTime.now().plusHours(1).format(dataFormat), "Important reason"));
+            temp2.extend(LocalDateTime.now().plusHours(1).format(dataFormat));
+            assignmentRepList = List.of(
+                    new PermanentAssignment(users.get(0), roles.get(0), metData),   // admin
+                    new TemporaryAssignment(users.get(1), roles.get(1), metData),   // admin-report
+                    temp1,   // user
+                    temp2,  // user
+                    new TemporaryAssignment(users.get(4), roles.get(3), metData2),   // guest
+                    new TemporaryAssignment(users.get(0), roles.get(3), metData2)
+            );
+
             usersManager.add(users.get(0));
             usersManager.add(users.get(1));
             usersManager.add(users.get(2));
@@ -845,14 +884,14 @@ class AppTest {
 //            }
 //            System.out.println("\n\n" + "=".repeat(50) + "\n\n");
 
-            assignmentManager.add(assignmentList.get(0));
-            assignmentManager.add(assignmentList.get(1));
-            assignmentManager.add(assignmentList.get(2));
-            assignmentManager.add(assignmentList.get(3));
-            assignmentManager.add(assignmentList.get(4));
-            assignmentManager.add(assignmentList.get(5));
+            assignmentManager.add(assignmentRepList.get(0));
+            assignmentManager.add(assignmentRepList.get(1));
+            assignmentManager.add(assignmentRepList.get(2));
+            assignmentManager.add(assignmentRepList.get(3));
+            assignmentManager.add(assignmentRepList.get(4));
+            assignmentManager.add(assignmentRepList.get(5));
 //
-//            for (AbstractRoleAssignment value : assignmentList){
+//            for (AbstractRoleAssignment value : assignmentRepList){
 //                System.out.println(value.summary());
 //            }
 
@@ -982,6 +1021,88 @@ class AppTest {
             resultReport.append("C - create\nR - read\nU - update\nD - delete");
 
             assertEquals(resultReport.toString(), resultGenerator);
+        }
+    }
+
+    @Nested
+    class testFormat {
+
+        public static final String RED = "\u001B[31m";
+        public static final String WHITE = "\u001B[37m";
+        public static final String RESET = "\u001B[0m";
+        public static final String GREEN = "\u001B[32m";
+
+        public static final String BOLD = "\u001B[1m";
+
+        @Test
+        void testTable() {
+            String[] mass1 = {"Username", "Full name", "Email"};
+            List<String[]> mass2 = new ArrayList<>();
+            mass2.add(new String[]{"admin", "System Administrator", "admin@company.com"});
+            mass2.add(new String[]{"john_manager", "John Smith", "john@company.com"});
+            mass2.add(new String[]{"jane_analyst", "Jane Doe", "john@company.com"});
+            String resMethod = FormatUtils.formatTable(mass1, mass2);
+
+            String endRes = RED + BOLD + "+" + "-".repeat(14) + "+" + "-".repeat(22) + "+" + "-".repeat(19) + "+\n" +
+                    String.format("|%-14s|%-22s|%-19s|\n", "Username", "Full name", "Email") +
+                    "+" + "-".repeat(14) + "+" + "-".repeat(22) + "+" + "-".repeat(19) + "+" + RESET +
+                    String.format("\n|%-14s|%-22s|%-19s|\n", "admin", "System Administrator", "admin@company.com") +
+                    String.format("|%-14s|%-22s|%-19s|\n", "john_manager", "John Smith", "john@company.com") +
+                    String.format("|%-14s|%-22s|%-19s|\n", "jane_analyst", "Jane Doe", "john@company.com") +
+                    "+" + "-".repeat(14) + "+" + "-".repeat(22) + "+" + "-".repeat(19) + "+";
+
+            assertEquals(endRes, resMethod);
+        }
+
+        @Test
+        void testBox() {
+            String text = "First line\nVary many text in this line\nsmall";
+            String resMethod = FormatUtils.formatBox(text);
+            String endRes =  "+" + "-".repeat(29) + "+\n" +
+                    String.format("|%-29s|\n", "First line") +
+                    String.format("|%-29s|\n", "Vary many text in this line") +
+                    String.format("|%-29s|\n", "small") +
+                    "+" + "-".repeat(29) + "+";
+
+            assertEquals(endRes, resMethod);
+        }
+
+        @Test
+        void testHeader() {
+            String text = "Header text";
+            String resMethod = FormatUtils.formatHeader(text);
+
+            String endRes = "*".repeat(17) +
+                    "\n*  " + text + "  *\n" +
+                    "*".repeat(17);
+
+            assertEquals(endRes, resMethod);
+        }
+
+        @Test
+        void testCut() {
+            String text = "Vary long text";
+            String resMethod = FormatUtils.truncate(text, 10);
+
+            String endRes = "Vary lon...";
+
+            assertEquals(endRes, resMethod);
+        }
+
+        @Test
+        void testPad() {
+            String text = "text";
+            String resMethod = FormatUtils.padRight(text, 10);
+            String endRes = "text      ";
+            assertEquals(endRes, resMethod);
+
+            resMethod = FormatUtils.padLeft(text, 10);
+            endRes = "      text";
+            assertEquals(endRes, resMethod);
+
+            resMethod = FormatUtils.padLeft(text, 3);
+            endRes = "t...";
+            assertEquals(endRes, resMethod);
         }
     }
 

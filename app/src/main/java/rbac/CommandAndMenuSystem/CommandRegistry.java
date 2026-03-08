@@ -6,6 +6,7 @@ import rbac.Filters.RoleFilters;
 import rbac.Filters.UserFilters;
 import rbac.LogSystem.ReportGenerator;
 import rbac.OtherFunctional.ConsoleUtils;
+import rbac.OtherFunctional.FormatUtils;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -36,13 +37,15 @@ public class CommandRegistry {
             int type = ConsoleUtils.promptInt(scanner, "Вывести всех пользователей (1) или использовать параметры (0):", 0, 1);
             switch (type) {
                 case 1: {
-                    System.out.println(String.format(BOLD + RED + "%-20s | %-40s | %-30s", "username", "full name", "email" + RESET));
-                    System.out.println("-".repeat(100));
                     List<User> userList = system.getUserManager().findAll();
+                    List<String[]> rows = new ArrayList<>();
                     for(User value : userList){
-                        System.out.println(String.format("%-20s | %-40s | %-30s", value.username(), value.fullName(), value.email()));
-                        System.out.println("-".repeat(100));
+                        String[] mass = {String.format("%s", value.username()), String.format("%s", value.fullName()),String.format("%s",  value.email())};
+                        rows.add(mass);
                     }
+                    String[] header = {"Username", "Full name", "Email"};
+                    String res = FormatUtils.formatTable(header, rows);
+                    out.println(res);
                     break;
                 }
                 case 0: {
@@ -90,28 +93,37 @@ public class CommandRegistry {
 
             List<RoleAssignment> userRoles = RBACSystem.getAssignmentManager().findByUser(user);
             Set<Permission> userPermissions = RBACSystem.getAssignmentManager().getUserPermissions(user);
-            System.out.println("Пользователь: " + user.format());
+            String res = FormatUtils.formatHeader("Пользователь: " + user.format());
+            out.println(res);
             if (userRoles.isEmpty()){
                 System.out.println("Не имеет ролей");
             }
             else {
-                System.out.println(RED + BOLD + "Роли: " + RESET);
+                System.out.println(RED + BOLD + "\nРоли: " + RESET);
+                String roleText = "";
                 for (RoleAssignment assignment : userRoles){
                     if (assignment instanceof AbstractRoleAssignment) {
                         AbstractRoleAssignment role = (AbstractRoleAssignment) assignment;
-                        System.out.println(role.summary());
+                        String help = "\n" + role.summary() + "\n";
+                        roleText += help;
                     }
                 }
+                res = FormatUtils.formatBox(roleText);
+                out.println(res);
             }
 
             if (userPermissions.isEmpty()){
                 System.out.println("Не имеет прав");
             }
             else {
-                System.out.println(RED + BOLD + "Права: " + RESET);
-                for (Permission per : userPermissions){
-                    System.out.println("    " + per.format());
+                System.out.println(RED + BOLD + "\nПрава: " + RESET);
+                String permText = "";
+                for (Permission per : userPermissions) {
+                    String help = "\n" + per.format() + "\n";
+                    permText += help;
                 }
+                res = FormatUtils.formatBox(permText);
+                out.println(res);
             }
         });
 
@@ -177,44 +189,44 @@ public class CommandRegistry {
                     "   3) По домену email\n" +
                     "   4) По полному имени (содержит)\n";
 
-            int key = ConsoleUtils.promptInt(scanner, text, 1, 4);
+            int key = ConsoleUtils.promptInt(scanner, FormatUtils.formatBox(text), 1, 4);
             switch (key){
                 case 1:{
                     String username = ConsoleUtils.promptString(scanner, "Введите имя пользователя: ", true);
 
                     List<User> userList  = RBACSystem.getUserManager().findByFilter(UserFilters.byUsernameContains(username));
-
                     if (userList == null || userList.isEmpty()) {
                         System.out.println("Пользователь " + username + " не найден");
                         return;
                     }
-
-                    System.out.println(String.format(RED + BOLD + "%-20s | %-40s | %-30s", "username", "full name", "email" + RESET));
-                    System.out.println("-".repeat(100));
-
+                    List<String[]> rows = new ArrayList<>();
                     for(User value : userList){
-                        System.out.println(String.format("%-20s | %-40s | %-30s", value.username(), value.fullName(), value.email()));
-                        System.out.println("-".repeat(100));
+                        String[] mass = {String.format("%s", value.username()), String.format("%s", value.fullName()),String.format("%s",  value.email())};
+                        rows.add(mass);
                     }
+                    String[] header = {"Username", "Full name", "Email"};
+                    String res = FormatUtils.formatTable(header, rows);
+                    out.println(res);
+
                     break;
                 }
                 case 2:{
                     String email = ConsoleUtils.promptString(scanner, "Введите почту: ", true);
 
                     List<User> userList  = RBACSystem.getUserManager().findByFilter(UserFilters.byEmail(email));
-
                     if (userList == null || userList.isEmpty()) {
                         System.out.println("Пользователь с почтой " + email + " не найден");
                         return;
                     }
 
-                    System.out.println(String.format(RED + BOLD + "%-20s | %-40s | %-30s", "username", "full name", "email" + RESET));
-                    System.out.println("-".repeat(100));
-
+                    List<String[]> rows = new ArrayList<>();
                     for(User value : userList){
-                        System.out.println(String.format("%-20s | %-40s | %-30s", value.username(), value.fullName(), value.email()));
-                        System.out.println("-".repeat(100));
+                        String[] mass = {String.format("%s", value.username()), String.format("%s", value.fullName()),String.format("%s",  value.email())};
+                        rows.add(mass);
                     }
+                    String[] header = {"Username", "Full name", "Email"};
+                    String res = FormatUtils.formatTable(header, rows);
+                    out.println(res);
                     break;
                 }
                 case 3:{
@@ -226,13 +238,14 @@ public class CommandRegistry {
                         return;
                     }
 
-                    System.out.println(String.format(RED + BOLD + "%-20s | %-40s | %-30s", "username", "full name", "email" + RESET));
-                    System.out.println("-".repeat(100));
-
+                    List<String[]> rows = new ArrayList<>();
                     for(User value : userList){
-                        System.out.println(String.format("%-20s | %-40s | %-30s", value.username(), value.fullName(), value.email()));
-                        System.out.println("-".repeat(100));
+                        String[] mass = {String.format("%s", value.username()), String.format("%s", value.fullName()),String.format("%s",  value.email())};
+                        rows.add(mass);
                     }
+                    String[] header = {"Username", "Full name", "Email"};
+                    String res = FormatUtils.formatTable(header, rows);
+                    out.println(res);
                     break;
                 }
                 case 4:{
@@ -244,13 +257,14 @@ public class CommandRegistry {
                         return;
                     }
 
-                    System.out.println(String.format(RED + BOLD + "%-20s | %-40s | %-30s", "username", "full name", "email" + RESET));
-                    System.out.println("-".repeat(100));
-
+                    List<String[]> rows = new ArrayList<>();
                     for(User value : userList){
-                        System.out.println(String.format("%-20s | %-40s | %-30s", value.username(), value.fullName(), value.email()));
-                        System.out.println("-".repeat(100));
+                        String[] mass = {String.format("%s", value.username()), String.format("%s", value.fullName()),String.format("%s",  value.email())};
+                        rows.add(mass);
                     }
+                    String[] header = {"Username", "Full name", "Email"};
+                    String res = FormatUtils.formatTable(header, rows);
+                    out.println(res);
                     break;
                 }
                 default:{
@@ -263,10 +277,20 @@ public class CommandRegistry {
         parser.registerCommand("role-list", "Выводит список всех ролей", (scanner, system) -> {
             List<Role> roleList = RBACSystem.getRoleManager().findAll();
 
+            List<String[]> rows = new ArrayList<>();
             for (Role role : roleList) {
-                System.out.println(role.toString());
-                System.out.println(RED + BOLD + "-".repeat(100) + RESET);
+                Set<Permission> listPerm = role.getPermissions();
+                int countPer = 0;
+                for (Permission value : listPerm) {
+                    countPer++;
+                }
+                String[] mass = {role.getId(), role.getName(), role.getDescription(), String.format("%d",countPer)};
+                rows.add(mass);
             }
+
+            String[] header = {"Role ID", "Role name", "Description", "Count permissions"};
+            String res = FormatUtils.formatTable(header, rows);
+            out.println(res);
         });
 
         parser.registerCommand("role-create", "Создание новой роли", (scanner, system) -> {
@@ -287,7 +311,8 @@ public class CommandRegistry {
                 System.out.println("Роль " + roleName + " не найдена");
                 return;
             }
-            System.out.println(role.toString());
+            String res = FormatUtils.formatBox(role.toString());
+            out.println(res);
 
             boolean type =  ConsoleUtils.promptYesNo(scanner, "Добавить права роли (yes / no): ");
             if (type){
@@ -388,22 +413,31 @@ public class CommandRegistry {
                     "   2) По наличию конкретного права\n" +
                     "   3) По минимальному количеству прав\n";
 
-            int a = ConsoleUtils.promptInt(scanner, text, 1, 3);
+            int a = ConsoleUtils.promptInt(scanner, FormatUtils.formatBox(text), 1, 3);
 
             switch (a){
                 case 1:{
                     String roleName = ConsoleUtils.promptString(scanner, "Введите название роли", true);
                     List<Role> roleList = RBACSystem.getRoleManager().findByFilter(RoleFilters.byNameContains(roleName));
-
                     if (roleList == null || roleList.isEmpty()) {
                         System.out.println("Роль " + roleName + " не найдена");
                         return;
                     }
 
-                    for(Role value : roleList){
-                        System.out.println(value.toString());
-                        System.out.println("-".repeat(100));
+                    List<String[]> rows = new ArrayList<>();
+                    for (Role role : roleList) {
+                        Set<Permission> listPerm = role.getPermissions();
+                        int countPer = 0;
+                        for (Permission value : listPerm) {
+                            countPer++;
+                        }
+                        String[] mass = {role.getId(), role.getName(), role.getDescription(), String.format("%d",countPer)};
+                        rows.add(mass);
                     }
+
+                    String[] header = {"Role ID", "Role name", "Description", "Count permissions"};
+                    String res = FormatUtils.formatTable(header, rows);
+                    out.println(res);
                     break;
                 }
                 case 2:{
@@ -418,9 +452,20 @@ public class CommandRegistry {
                         return;
                     }
 
-                    for (Role value : roleList){
-                        System.out.println(value.toString());
+                    List<String[]> rows = new ArrayList<>();
+                    for (Role role : roleList) {
+                        Set<Permission> listPerm = role.getPermissions();
+                        int countPer = 0;
+                        for (Permission value : listPerm) {
+                            countPer++;
+                        }
+                        String[] mass = {role.getId(), role.getName(), role.getDescription(), String.format("%d",countPer)};
+                        rows.add(mass);
                     }
+
+                    String[] header = {"Role ID", "Role name", "Description", "Count permissions"};
+                    String res = FormatUtils.formatTable(header, rows);
+                    out.println(res);
                     break;
                 }
                 case 3: {
@@ -432,9 +477,20 @@ public class CommandRegistry {
                         return;
                     }
 
-                    for (Role value : roleList){
-                        System.out.println(value.toString());
+                    List<String[]> rows = new ArrayList<>();
+                    for (Role role : roleList) {
+                        Set<Permission> listPerm = role.getPermissions();
+                        int countPer = 0;
+                        for (Permission value : listPerm) {
+                            countPer++;
+                        }
+                        String[] mass = {role.getId(), role.getName(), role.getDescription(), String.format("%d",countPer)};
+                        rows.add(mass);
                     }
+
+                    String[] header = {"Role ID", "Role name", "Description", "Count permissions"};
+                    String res = FormatUtils.formatTable(header, rows);
+                    out.println(res);
                     break;
                 }
                 default:{
@@ -483,7 +539,7 @@ public class CommandRegistry {
                 }
                 case 2: {
                     String reason = ConsoleUtils.promptString(scanner, "Введите причину назначения (опционально)", false);
-                    String date = ConsoleUtils.promptString(scanner, "Введите дату окончания назначения (не раньше нынешней) в формате: yyyy MM dd HH:mm:ss", false);
+                    String date = ConsoleUtils.promptString(scanner, "Введите дату окончания назначения (не раньше нынешней) в формате: yyyy-MM-dd HH:mm:ss", false);
 
                     LocalDateTime nowDate = LocalDateTime.parse(date, DATE_FORMAT);
                     String nowUser = system.getCurrentUser();
@@ -568,13 +624,19 @@ public class CommandRegistry {
 
         parser.registerCommand("assignment-list", "Список всех назначений", (scanner, system) -> {
             List<RoleAssignment> roleList = RBACSystem.getAssignmentManager().findAll();
-            for (RoleAssignment roleAssignment : roleList){
-                if (roleAssignment instanceof AbstractRoleAssignment) {
-                    AbstractRoleAssignment role = (AbstractRoleAssignment) roleAssignment;
-                    System.out.println(role.summary());
-                    out.println(RED + BOLD + "-".repeat(100) + RESET);
-                }
+
+            List<String[]> rows = new ArrayList<>();
+            for (RoleAssignment role : roleList) {
+                AbstractRoleAssignment ab = (AbstractRoleAssignment) role;
+
+                String status = ab.isActive() ?  "ACTIVE" : "INACTIVE";
+                String[] mass = {ab.user().username(), ab.role().getName(), ab.assignmentType(), status, ab.metadata().assignedAt()};
+                rows.add(mass);
             }
+
+            String[] header = {"User", "Role", "Type", "Status", "Assigned AT"};
+            String res = FormatUtils.formatTable(header, rows);
+            out.println(res);
         });
 
         parser.registerCommand("assignment-list-user", "Список назначений конкретного пользователя", (scanner, system) -> {
@@ -588,12 +650,18 @@ public class CommandRegistry {
             }
 
             List<RoleAssignment> roleList = RBACSystem.getAssignmentManager().findByUser(user);
-            for (RoleAssignment roleAssignment : roleList){
-                if (roleAssignment instanceof AbstractRoleAssignment) {
-                    AbstractRoleAssignment role = (AbstractRoleAssignment) roleAssignment;
-                    System.out.println(role.summary());
-                }
+            List<String[]> rows = new ArrayList<>();
+            for (RoleAssignment role : roleList) {
+                AbstractRoleAssignment ab = (AbstractRoleAssignment) role;
+
+                String status = ab.isActive() ?  "ACTIVE" : "INACTIVE";
+                String[] mass = {ab.user().username(), ab.role().getName(), ab.assignmentType(), status, ab.metadata().assignedAt()};
+                rows.add(mass);
             }
+
+            String[] header = {"User", "Role", "Type", "Status", "Assigned AT"};
+            String res = FormatUtils.formatTable(header, rows);
+            out.println(res);
         });
 
         parser.registerCommand("assignment-list-role", "Список назначений конкретной роли", (scanner, system) -> {
@@ -607,33 +675,50 @@ public class CommandRegistry {
             }
 
             List<RoleAssignment> roleList = RBACSystem.getAssignmentManager().findByRole(role);
-            for (RoleAssignment roleAssignment : roleList){
-                if (roleAssignment instanceof AbstractRoleAssignment) {
-                    AbstractRoleAssignment roleAs = (AbstractRoleAssignment) roleAssignment;
-                    System.out.println(roleAs.summary());
-                    out.println(RED + BOLD + "-".repeat(100) + RESET);
-                }
+            List<String[]> rows = new ArrayList<>();
+            for (RoleAssignment roleAssignment : roleList) {
+                AbstractRoleAssignment ab = (AbstractRoleAssignment) roleAssignment;
+
+                String status = ab.isActive() ?  "ACTIVE" : "INACTIVE";
+                String[] mass = {ab.user().username(), ab.role().getName(), ab.assignmentType(), status, ab.metadata().assignedAt()};
+                rows.add(mass);
             }
+
+            String[] header = {"User", "Role", "Type", "Status", "Assigned AT"};
+            String res = FormatUtils.formatTable(header, rows);
+            out.println(res);
         });
 
         parser.registerCommand("assignment-active", "Список только активные назначения", (scanner, system) -> {
             List<RoleAssignment> roleList = RBACSystem.getAssignmentManager().getActiveAssignments();
-            for (RoleAssignment roleAssignment : roleList){
-                if (roleAssignment instanceof AbstractRoleAssignment) {
-                    AbstractRoleAssignment roleAs = (AbstractRoleAssignment) roleAssignment;
-                    System.out.println(roleAs.summary());
-                }
+            List<String[]> rows = new ArrayList<>();
+            for (RoleAssignment roleAssignment : roleList) {
+                AbstractRoleAssignment ab = (AbstractRoleAssignment) roleAssignment;
+
+                String status = ab.isActive() ?  "ACTIVE" : "INACTIVE";
+                String[] mass = {ab.user().username(), ab.role().getName(), ab.assignmentType(), status, ab.metadata().assignedAt()};
+                rows.add(mass);
             }
+
+            String[] header = {"User", "Role", "Type", "Status", "Assigned AT"};
+            String res = FormatUtils.formatTable(header, rows);
+            out.println(res);
         });
 
         parser.registerCommand("assignment-expired", "Список только истёкшие временные назначения", (scanner, system) -> {
             List<RoleAssignment> roleList = RBACSystem.getAssignmentManager().getExpiredAssignments();
-            for (RoleAssignment roleAssignment : roleList){
-                if (roleAssignment instanceof TemporaryAssignment) {
-                    TemporaryAssignment roleAs = (TemporaryAssignment) roleAssignment;
-                    System.out.println(roleAs.summary());
-                }
+            List<String[]> rows = new ArrayList<>();
+            for (RoleAssignment roleAssignment : roleList) {
+                AbstractRoleAssignment ab = (AbstractRoleAssignment) roleAssignment;
+
+                String status = ab.isActive() ?  "ACTIVE" : "INACTIVE";
+                String[] mass = {ab.user().username(), ab.role().getName(), ab.assignmentType(), status, ab.metadata().assignedAt()};
+                rows.add(mass);
             }
+
+            String[] header = {"User", "Role", "Type", "Status", "Assigned AT"};
+            String res = FormatUtils.formatTable(header, rows);
+            out.println(res);
         });
 
         parser.registerCommand("assignment-extend", "Продлить временное назначение", (scanner, system) -> {
@@ -671,7 +756,7 @@ public class CommandRegistry {
             }
             TemporaryAssignment value = ConsoleUtils.promptChoice(scanner, "Временные назначения: ", resRoles);
 
-            String date = ConsoleUtils.promptString(scanner, "Введите дату окончания назначения (не раньше нынешней) в формате: yyyy MM dd HH:mm:ss", true);
+            String date = ConsoleUtils.promptString(scanner, "Введите дату окончания назначения (не раньше нынешней) в формате: yyyy-MM-dd HH:mm:ss", true);
 
             LocalDateTime nowDate = LocalDateTime.parse(date, DATE_FORMAT);
 
@@ -708,18 +793,34 @@ public class CommandRegistry {
                     switch (typeAssigment){
                         case 1:{
                             List<RoleAssignment> roleList = RBACSystem.getAssignmentManager().findByFilter(AssignmentFilters.byType("PERMANENT"));
-                            for (RoleAssignment value : roleList){
-                                System.out.println(((AbstractRoleAssignment) value).summary());
-                                out.println(RED + BOLD + "-".repeat(100) + RESET);
+                            List<String[]> rows = new ArrayList<>();
+                            for (RoleAssignment roleAssignment : roleList) {
+                                AbstractRoleAssignment ab = (AbstractRoleAssignment) roleAssignment;
+
+                                String status = ab.isActive() ?  "ACTIVE" : "INACTIVE";
+                                String[] mass = {ab.user().username(), ab.role().getName(), ab.assignmentType(), status, ab.metadata().assignedAt()};
+                                rows.add(mass);
                             }
+
+                            String[] header = {"User", "Role", "Type", "Status", "Assigned AT"};
+                            String res = FormatUtils.formatTable(header, rows);
+                            out.println(res);
                             break;
                         }
                         case 2:{
                             List<RoleAssignment> roleList = RBACSystem.getAssignmentManager().findByFilter(AssignmentFilters.byType("TEMPORARY"));
-                            for (RoleAssignment value : roleList){
-                                System.out.println(((AbstractRoleAssignment) value).summary());
-                                out.println(RED + BOLD + "-".repeat(100) + RESET);
+                            List<String[]> rows = new ArrayList<>();
+                            for (RoleAssignment roleAssignment : roleList) {
+                                AbstractRoleAssignment ab = (AbstractRoleAssignment) roleAssignment;
+
+                                String status = ab.isActive() ?  "ACTIVE" : "INACTIVE";
+                                String[] mass = {ab.user().username(), ab.role().getName(), ab.assignmentType(), status, ab.metadata().assignedAt()};
+                                rows.add(mass);
                             }
+
+                            String[] header = {"User", "Role", "Type", "Status", "Assigned AT"};
+                            String res = FormatUtils.formatTable(header, rows);
+                            out.println(res);
                             break;
                         }
                         default:{
@@ -738,18 +839,34 @@ public class CommandRegistry {
                     switch (typeAssigment){
                         case 1:{
                             List<RoleAssignment> roleList = RBACSystem.getAssignmentManager().findByFilter(AssignmentFilters.activeOnly());
-                            for (RoleAssignment value : roleList){
-                                System.out.println(((AbstractRoleAssignment) value).summary());
-                                out.println(RED + BOLD + "-".repeat(100) + RESET);
+                            List<String[]> rows = new ArrayList<>();
+                            for (RoleAssignment roleAssignment : roleList) {
+                                AbstractRoleAssignment ab = (AbstractRoleAssignment) roleAssignment;
+
+                                String status = ab.isActive() ?  "ACTIVE" : "INACTIVE";
+                                String[] mass = {ab.user().username(), ab.role().getName(), ab.assignmentType(), status, ab.metadata().assignedAt()};
+                                rows.add(mass);
                             }
+
+                            String[] header = {"User", "Role", "Type", "Status", "Assigned AT"};
+                            String res = FormatUtils.formatTable(header, rows);
+                            out.println(res);
                             break;
                         }
                         case 2:{
                             List<RoleAssignment> roleList = RBACSystem.getAssignmentManager().findByFilter(AssignmentFilters.inactiveOnly());
-                            for (RoleAssignment value : roleList){
-                                System.out.println(((AbstractRoleAssignment) value).summary());
-                                out.println(RED + BOLD + "-".repeat(100) + RESET);
+                            List<String[]> rows = new ArrayList<>();
+                            for (RoleAssignment roleAssignment : roleList) {
+                                AbstractRoleAssignment ab = (AbstractRoleAssignment) roleAssignment;
+
+                                String status = ab.isActive() ?  "ACTIVE" : "INACTIVE";
+                                String[] mass = {ab.user().username(), ab.role().getName(), ab.assignmentType(), status, ab.metadata().assignedAt()};
+                                rows.add(mass);
                             }
+
+                            String[] header = {"User", "Role", "Type", "Status", "Assigned AT"};
+                            String res = FormatUtils.formatTable(header, rows);
+                            out.println(res);
                             break;
                         }
                         default:{
@@ -760,31 +877,41 @@ public class CommandRegistry {
                     break;
                 }
                 case 5: {
-                    String date = ConsoleUtils.promptString(scanner, "Введите дату назначения в формате: yyyy MM dd HH:mm:ss", true);
+                    String date = ConsoleUtils.promptString(scanner, "Введите дату назначения в формате: yyyy-MM-dd HH:mm:ss", true);
                     LocalDateTime nowDate = LocalDateTime.parse(date, DATE_FORMAT);
 
                     List<RoleAssignment> roleList = RBACSystem.getAssignmentManager().findByFilter(AssignmentFilters.assignedAfter(date));
-                    for (RoleAssignment roleAssignment : roleList){
-                        if (roleAssignment instanceof AbstractRoleAssignment) {
-                            AbstractRoleAssignment assignment = (AbstractRoleAssignment) roleAssignment;
-                            System.out.println(assignment.summary());
-                            out.println(RED + BOLD + "-".repeat(100) + RESET);
-                        }
+                    List<String[]> rows = new ArrayList<>();
+                    for (RoleAssignment roleAssignment : roleList) {
+                        AbstractRoleAssignment ab = (AbstractRoleAssignment) roleAssignment;
+
+                        String status = ab.isActive() ?  "ACTIVE" : "INACTIVE";
+                        String[] mass = {ab.user().username(), ab.role().getName(), ab.assignmentType(), status, ab.metadata().assignedAt()};
+                        rows.add(mass);
                     }
+
+                    String[] header = {"User", "Role", "Type", "Status", "Assigned AT"};
+                    String res = FormatUtils.formatTable(header, rows);
+                    out.println(res);
                     break;
                 }
                 case 6: {
-                    String date = ConsoleUtils.promptString(scanner, "Введите дату в формате: yyyy MM dd HH:mm:ss", true);
+                    String date = ConsoleUtils.promptString(scanner, "Введите дату в формате: yyyy-MM-dd HH:mm:ss", true);
                     LocalDateTime nowDate = LocalDateTime.parse(date, DATE_FORMAT);
 
                     List<RoleAssignment> roleList = RBACSystem.getAssignmentManager().findByFilter(AssignmentFilters.expiringBefore(date));
-                    for (RoleAssignment roleAssignment : roleList){
-                        if (roleAssignment instanceof AbstractRoleAssignment) {
-                            AbstractRoleAssignment assignment = (AbstractRoleAssignment) roleAssignment;
-                            System.out.println(assignment.summary());
-                            out.println(RED + BOLD + "-".repeat(100) + RESET);
-                        }
+                    List<String[]> rows = new ArrayList<>();
+                    for (RoleAssignment roleAssignment : roleList) {
+                        AbstractRoleAssignment ab = (AbstractRoleAssignment) roleAssignment;
+
+                        String status = ab.isActive() ?  "ACTIVE" : "INACTIVE";
+                        String[] mass = {ab.user().username(), ab.role().getName(), ab.assignmentType(), status, ab.metadata().assignedAt()};
+                        rows.add(mass);
                     }
+
+                    String[] header = {"User", "Role", "Type", "Status", "Assigned AT"};
+                    String res = FormatUtils.formatTable(header, rows);
+                    out.println(res);
                     break;
                 }
                 default:{
@@ -813,11 +940,13 @@ public class CommandRegistry {
                     .collect(Collectors.groupingBy(Permission::resource));
 
             permissionsByResource.forEach((resource, perms) -> {
-                System.out.println("\nResource: " + resource);
-                System.out.println("==================================");
+                String res = FormatUtils.formatHeader("Resource: " + resource);
+                out.println(res);
                 for (Permission value : perms){
-                    System.out.println(value.format());
+                    res = FormatUtils.formatBox(value.format());
+                    out.println(res);
                 }
+                out.println("\n");
             });
 
         });
@@ -897,7 +1026,7 @@ public class CommandRegistry {
                     .limit(3)
                     .toList();
 
-            System.out.println("Топ 3");
+            System.out.println("\nТоп 3");
             for (int i = 0; i < topRoles.size(); i++) {
                 Map.Entry<String, Integer> entry = topRoles.get(i);
                 Role role = RBACSystem.getRoleManager().findByName(entry.getKey()).orElse(null);
@@ -1279,7 +1408,6 @@ public class CommandRegistry {
         });
 
         parser.registerCommand("audit-log", "Вывод логов и сохранение", (scanner, system) -> {
-            System.out.println("Логи:");
             RBACSystem.getLogSystem().printLog();
 
             System.out.println("\n\nДля сохранения логов напишите yes:");
@@ -1299,7 +1427,6 @@ public class CommandRegistry {
         });
 
         parser.registerCommand("report-users", "Вывести / сохранить (в txt) отчёт по пользователям", (scanner, system) -> {
-            System.out.println("Для вывода отчета напишите 1, для сохранения в файл 0:");
             int type = ConsoleUtils.promptInt(scanner, "Для вывода отчета напишите 1, для сохранения в файл 0", 0, 1);
 
             switch (type) {
@@ -1322,7 +1449,6 @@ public class CommandRegistry {
         });
 
         parser.registerCommand("report-roles", "Вывести / сохранить (в txt) отчёт по ролям", (scanner, system) -> {
-            System.out.println("Для вывода отчета напишите 1, для сохранения в файл 0:");
             int type =ConsoleUtils.promptInt(scanner, "Для вывода отчета напишите 1, для сохранения в файл 0", 0, 1);
 
             switch (type) {
@@ -1345,7 +1471,6 @@ public class CommandRegistry {
         });
 
         parser.registerCommand("report-matrix", "Вывести / сохранить (в txt) отчёт по правам", (scanner, system) -> {
-            System.out.println("Для вывода отчета напишите 1, для сохранения в файл 0:");
             int type = ConsoleUtils.promptInt(scanner, "Для вывода отчета напишите 1, для сохранения в файл 0", 0, 1);
 
             switch (type) {
