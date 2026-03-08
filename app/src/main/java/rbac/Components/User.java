@@ -8,7 +8,7 @@ public record User(String username, String fullName, String email) {
 
     private static final Pattern FN_PATTER = Pattern.compile("^[a-zA-Z\\s]+$");
 
-    public static User validate(String username, String fullName, String email){
+    public static User create(String username, String fullName, String email){
 
         if (!ValidationUtils.isValidUsername(username))
             throw new IllegalArgumentException("Invalid format username. Username must not contain special characters and numbers and not be empty");
