@@ -17,7 +17,7 @@ public class Role {
         this.permissions = new HashSet<>();
     }
 
-    public Role (String name, String description, Set<Permission> permissions){
+    public Role (String name, String description, Set<Permission> permissions) {
         ValidationUtils.requireNonEmpty(name, "Role name");
 
 
@@ -89,5 +89,9 @@ public class Role {
             result += "    - " + value.format() + "\n";
 
         return  result;
+    }
+
+    public String format() {
+        return toString();
     }
 }

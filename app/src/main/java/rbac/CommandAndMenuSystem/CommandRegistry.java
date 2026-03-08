@@ -65,7 +65,7 @@ public class CommandRegistry {
             String fullName = ConsoleUtils.promptString(scanner, "Введите ФИО пользователя: ", true);
             String email = ConsoleUtils.promptString(scanner, "Введите почту пользователя: ", true);
 
-            User newUser = User.validate(username, fullName, email);
+            User newUser = User.create(username, fullName, email);
             int count1 = RBACSystem.getUserManager().count();
             RBACSystem.getUserManager().add(newUser);
             int count2 = RBACSystem.getUserManager().count();
@@ -140,7 +140,7 @@ public class CommandRegistry {
                 return;
             }
             else {
-                User.validate(username, fullName, email);
+                User.create(username, fullName, email);
                 RBACSystem.getUserManager().update(username, fullName, email);
                 RBACSystem.getLogSystem().log("update", system.getCurrentUser(), "user", "User " +  system.getCurrentUser() + " update data user " + username);
             }
@@ -295,7 +295,7 @@ public class CommandRegistry {
 
         parser.registerCommand("role-create", "Создание новой роли", (scanner, system) -> {
             String roleName = ConsoleUtils.promptString(scanner, "Введите имя роли: ", true);
-            String roleDescription = ConsoleUtils.promptString(scanner, "Введите описание роли (опционально): ", false);
+            String roleDescription = ConsoleUtils.promptString(scanner, "Введите описание роли: ", true);
 
             Role newRole = new Role(roleName, roleDescription);
             RBACSystem.getRoleManager().add(newRole);
@@ -380,7 +380,7 @@ public class CommandRegistry {
 
             String permissionName = ConsoleUtils.promptString(scanner, "Введите имя права доступа: ", true);
             String permissionResource =ConsoleUtils.promptString(scanner, "Введите ресурс права доступа: ", true);
-            String permissionDescription = ConsoleUtils.promptString(scanner, "Введите описание права доступа: ", false);
+            String permissionDescription = ConsoleUtils.promptString(scanner, "Введите описание права доступа: ", true);
 
             Permission permission = new Permission(permissionName, permissionResource, permissionDescription);
             RBACSystem.getRoleManager().addPermissionToRole(roleName, permission);
@@ -443,11 +443,11 @@ public class CommandRegistry {
                 case 2:{
                     String permissionName = ConsoleUtils.promptString(scanner, "Введите имя права доступа", true);
                     String permissionResource = ConsoleUtils.promptString(scanner, "Введите ресурс права доступа", true);
-                    String permissionDescription = ConsoleUtils.promptString(scanner, "Введите описание права доступа (опционально)", false);
+                    String permissionDescription = ConsoleUtils.promptString(scanner, "Введите описание права доступа", true);
 
                     Permission permission = new Permission(permissionName, permissionResource, permissionDescription);
                     List<Role> roleList = RBACSystem.getRoleManager().findByFilter(RoleFilters.hasPermission(permission));
-                    if (roleList.isEmpty()){
+                    if (roleList.isEmpty()) {
                         System.out.println("Роли не найдены");
                         return;
                     }
@@ -539,7 +539,7 @@ public class CommandRegistry {
                 }
                 case 2: {
                     String reason = ConsoleUtils.promptString(scanner, "Введите причину назначения (опционально)", false);
-                    String date = ConsoleUtils.promptString(scanner, "Введите дату окончания назначения (не раньше нынешней) в формате: yyyy-MM-dd HH:mm:ss", false);
+                    String date = ConsoleUtils.promptString(scanner, "Введите дату окончания назначения (не раньше нынешней) в формате: yyyy-MM-dd HH:mm:ss", true);
 
                     LocalDateTime nowDate = LocalDateTime.parse(date, DATE_FORMAT);
                     String nowUser = system.getCurrentUser();
@@ -1041,7 +1041,6 @@ public class CommandRegistry {
         });
 
         parser.registerCommand("exit", "Выход", (scanner, system) -> {
-            System.out.println("Для подтверждения выхода напишите: yes");
             boolean exit = ConsoleUtils.promptYesNo(scanner, "Для подтверждения выхода напишите yes, иначе no:");
 
             if (exit){
