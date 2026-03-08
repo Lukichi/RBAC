@@ -3,6 +3,7 @@ package rbac;
 import rbac.CommandAndMenuSystem.CommandParser;
 import rbac.CommandAndMenuSystem.CommandRegistry;
 import rbac.CommandAndMenuSystem.RBACSystem;
+import rbac.OtherFunctional.FormatUtils;
 
 import java.util.*;
 

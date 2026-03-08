@@ -64,7 +64,7 @@ public abstract class AbstractRoleAssignment implements RoleAssignment {
 
     public String summary() {
         String status = isActive() ?  "ACTIVE" : "INACTIVE";
-        return  String.format("[%s] %s assigned to %s by %s at %s\nReason: %s\nStatus: %s\n",
+        return  String.format("[%s] %s assigned to %s by %s at %s\nReason: %s\nStatus: %s",
                 assignmentType(), role().getName(), user().username(), metadata().assignedBy(), metadata().assignedAt(), metadata().reason(), status);
     }
 }

@@ -1,5 +1,8 @@
 package rbac.Components;
 
+import rbac.OtherFunctional.DateUtils;
+import rbac.SystemValidation.ValidationUtils;
+
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -7,7 +10,7 @@ import java.time.temporal.ChronoUnit;
 
 public class TemporaryAssignment extends  AbstractRoleAssignment{
 
-    private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy MM dd HH:mm:ss");
+    private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     private String expiresAt;
     private boolean autoRenew;
@@ -29,9 +32,7 @@ public class TemporaryAssignment extends  AbstractRoleAssignment{
 
         super(user, role, metadata);
 
-        if (expiresAt == null || expiresAt.isEmpty()) {
-            throw new IllegalArgumentException("ExpiresAt cannot be null or empty");
-        }
+        ValidationUtils.requireNonEmpty(expiresAt, "ExpiresAt");
 
         if(!checkDateFormat(expiresAt))
             throw new IllegalArgumentException("ExpiresAt cannot be null or empty");
@@ -41,27 +42,19 @@ public class TemporaryAssignment extends  AbstractRoleAssignment{
     }
 
     private boolean checkDateFormat(String date){
-        try {
-            LocalDateTime.parse(date, DATE_FORMAT);
+        if (ValidationUtils.isValidDate(date))
             return true;
-        } catch (DateTimeParseException e1) {
+        else
             return false;
-        }
     }
 
     @Override
     public boolean isActive() {
-        LocalDateTime nowDate = LocalDateTime.now();
-        LocalDateTime thisDate = LocalDateTime.parse(this.expiresAt, DATE_FORMAT);
-
-        return nowDate.isBefore(thisDate);
+        return DateUtils.isAfter(DateUtils.getCurrentDateTime(), expiresAt);
     }
 
     public boolean isActive(String date) {
-        LocalDateTime nowDate = LocalDateTime.parse(date, DATE_FORMAT);
-        LocalDateTime thisDate = LocalDateTime.parse(this.expiresAt, DATE_FORMAT);
-
-        return nowDate.isBefore(thisDate);
+        return DateUtils.isAfter(date, expiresAt);
     }
 
     @Override
@@ -70,8 +63,7 @@ public class TemporaryAssignment extends  AbstractRoleAssignment{
     }
 
     public void extend(String newExpirationDate){
-        if (newExpirationDate == null || newExpirationDate.isEmpty())
-            throw new IllegalArgumentException("ExpiresAt cannot be null or empty");
+        ValidationUtils.requireNonEmpty(newExpirationDate, "ExpiresAt");
 
         if (isActive(newExpirationDate))
             throw new IllegalArgumentException("New date must be after current date: " + this.expiresAt + " | " + newExpirationDate);
@@ -84,15 +76,7 @@ public class TemporaryAssignment extends  AbstractRoleAssignment{
     }
 
     private String getTimeRemaining(){
-        LocalDateTime nowDate = LocalDateTime.now();
-        LocalDateTime thisDate = LocalDateTime.parse(this.expiresAt, DATE_FORMAT);
-
-        long days = Math.abs(ChronoUnit.DAYS.between(nowDate, thisDate));
-
-        if (isActive())
-            return "through " + days + " days";
-
-        return days + " days ago";
+        return DateUtils.formatRelativeTime(expiresAt);
     }
 
     @Override

@@ -4,23 +4,31 @@ package rbac;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
 import rbac.CommandAndMenuSystem.RBACSystem;
 import rbac.Components.*;
 import rbac.Filters.*;
+import rbac.LogSystem.ReportGenerator;
 import rbac.Managers.AssignmentManager;
 import rbac.Managers.RoleManager;
 import rbac.Managers.UserManager;
+import rbac.OtherFunctional.DateUtils;
+import rbac.OtherFunctional.FormatUtils;
 import rbac.Sorters.AssignmentSorters;
 import rbac.Sorters.RoleSorters;
 import rbac.Sorters.UserSorters;
+import rbac.LogSystem.AuditEntry;
+import rbac.LogSystem.AuditLog;
+import rbac.SystemValidation.ValidationUtils;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
 class AppTest {
@@ -41,7 +49,7 @@ class AppTest {
         permissions = List.of(
                 new Permission("READ", "testers", "Read users1"),
                 new Permission("ReaD", "report", "Read users2"),
-                new Permission("Write", "report", "other text"),
+                new Permission("CREATE", "report", "other text"),
                 new Permission("READ", "user", "text read")
         );
 
@@ -54,7 +62,7 @@ class AppTest {
 
         AssignmentMetadata metData = AssignmentMetadata.now("ADMIN", "Important reason");
         AssignmentMetadata metData2 = AssignmentMetadata.now("admin-report", "Important reason");
-        DateTimeFormatter dataFormat = DateTimeFormatter.ofPattern("yyyy MM dd HH:mm:ss");
+        DateTimeFormatter dataFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         TemporaryAssignment temp1 = new TemporaryAssignment(users.get(2), roles.get(2), new AssignmentMetadata("ADMIN", LocalDateTime.now().plusHours(3).format(dataFormat), "Important reason"));
         temp1.extend(LocalDateTime.now().plusHours(3).format(dataFormat));
         TemporaryAssignment temp2 = new TemporaryAssignment(users.get(3), roles.get(2), new AssignmentMetadata("admin-report", LocalDateTime.now().plusHours(1).format(dataFormat), "Important reason"));
@@ -64,7 +72,7 @@ class AppTest {
                 new TemporaryAssignment(users.get(1), roles.get(1), metData),   // admin-report
                 temp1,   // user
                 temp2,  // user
-                new TemporaryAssignment(users.get(4), roles.get(3), metData2)   // guest
+                new TemporaryAssignment(users.get(4), roles.get(3), metData2)  // guest
         );
 
 //        System.out.println("\nДанные для теста" );
@@ -245,6 +253,27 @@ class AppTest {
     @Nested
     class assigmentFilterTest{
 
+        private  List<AbstractRoleAssignment> assignmentAssigList;
+
+        @BeforeEach
+        void initData() {
+            AssignmentMetadata metData = AssignmentMetadata.now("ADMIN", "Important reason");
+            AssignmentMetadata metData2 = AssignmentMetadata.now("admin-report", "Important reason");
+            DateTimeFormatter dataFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            TemporaryAssignment temp1 = new TemporaryAssignment(users.get(2), roles.get(2), new AssignmentMetadata("ADMIN", LocalDateTime.now().plusHours(3).format(dataFormat), "Important reason"));
+            temp1.extend(LocalDateTime.now().plusHours(3).format(dataFormat));
+            TemporaryAssignment temp2 = new TemporaryAssignment(users.get(3), roles.get(2), new AssignmentMetadata("admin-report", LocalDateTime.now().plusHours(1).format(dataFormat), "Important reason"));
+            temp2.extend(LocalDateTime.now().plusHours(1).format(dataFormat));
+            assignmentAssigList = List.of(
+                    new PermanentAssignment(users.get(0), roles.get(0), metData),   // admin
+                    new TemporaryAssignment(users.get(1), roles.get(1), metData),   // admin-report
+                    temp1,   // user
+                    temp2,  // user
+                    new TemporaryAssignment(users.get(4), roles.get(3), metData2),   // guest
+                    new TemporaryAssignment(users.get(0), roles.get(3), metData2)
+            );
+        }
+
         @Test
         void testAssigmentUser(){
             AssignmentFilter filter1 = AssignmentFilters.byUser(users.get(0));
@@ -385,7 +414,7 @@ class AppTest {
 
         @Test
         void testAssigmentAfterAssigmenting(){
-            DateTimeFormatter dataFormat = DateTimeFormatter.ofPattern("yyyy MM dd HH:mm:ss");
+            DateTimeFormatter dataFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
             AssignmentFilter filter = AssignmentFilters.assignedAfter(LocalDateTime.now().plusHours(2).format(dataFormat));
 
             List<AbstractRoleAssignment> resultFilter = assignmentList.stream().filter(filter::test).toList();
@@ -407,7 +436,7 @@ class AppTest {
 
         @Test
         void testAssigmentBeforeAssigmenting(){
-            DateTimeFormatter dataFormat = DateTimeFormatter.ofPattern("yyyy MM dd HH:mm:ss");
+            DateTimeFormatter dataFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
             AssignmentFilter filter = AssignmentFilters.expiringBefore(LocalDateTime.now().plusHours(2).format(dataFormat));
 
             List<AbstractRoleAssignment> resultFilter = assignmentList.stream().filter(filter::test).toList();
@@ -520,21 +549,6 @@ class AppTest {
 
             assertEquals(result, sortedUsers, "Записи должны совпадать");
         }
-
-//        AssignmentMetadata metData = AssignmentMetadata.now("ADMIN", "Important reason");
-//        AssignmentMetadata metData2 = AssignmentMetadata.now("admin-report", "Important reason");
-//        DateTimeFormatter dataFormat = DateTimeFormatter.ofPattern("yyyy MM dd HH:mm:ss");
-//        TemporaryAssignment temp1 = new TemporaryAssignment(users.get(2), roles.get(2), new AssignmentMetadata("ADMIN", LocalDateTime.now().plusHours(3).format(dataFormat), "Important reason"));
-//        temp1.extend(LocalDateTime.now().plusHours(3).format(dataFormat));
-//        TemporaryAssignment temp2 = new TemporaryAssignment(users.get(3), roles.get(2), new AssignmentMetadata("admin-report", LocalDateTime.now().plusHours(1).format(dataFormat), "Important reason"));
-//        temp2.extend(LocalDateTime.now().plusHours(1).format(dataFormat));
-//        assignmentList = List.of(
-//                new PermanentAssignment(users.get(0), roles.get(0), metData),   // admin
-//                new TemporaryAssignment(users.get(1), roles.get(1), metData),   // admin-report
-//                temp1,   // user
-//                temp2,  // user
-//                new TemporaryAssignment(users.get(4), roles.get(3), metData2)   // guest
-//                );
 
         @Test
         void sortAssigmentByUsername(){
@@ -710,18 +724,446 @@ class AppTest {
             String resultStatictic = "Count users: " + 1 + "\nCount roles: " + 1 +"\nCount assignments: " + 1;
             assertEquals(resultStatictic, RBACSystem.generateStatistics());
         }
+    }
+
+    @Nested
+    class validTests {
 
         @Test
-        void testCommand(){
-            Scanner scanner = new Scanner(System.in);
+        void testValidUsername(){
+            assertEquals(true, ValidationUtils.isValidUsername("admin"));
+            assertEquals(true, ValidationUtils.isValidUsername("test2"));
+            assertEquals(false, ValidationUtils.isValidUsername("error@"));
+            assertEquals(false, ValidationUtils.isValidUsername(""));
+        }
 
-            while (true) {
-                String command = scanner.nextLine();
+        @Test
+        void testValidEmail(){
+            assertEquals(true, ValidationUtils.isValidEmail("admin@mail.ru"));
+            assertEquals(true, ValidationUtils.isValidEmail("test$2@gmail.com"));
+            assertEquals(false, ValidationUtils.isValidEmail(""));
+            assertEquals(false, ValidationUtils.isValidEmail("text@text@.ru"));
+        }
 
-                System.out.println(command);
+        @Test
+        void testValidDate(){
+            assertEquals(true, ValidationUtils.isValidDate("2026-03-06 11:11:00"));
+            assertEquals(false, ValidationUtils.isValidDate(""));
+            assertEquals(false, ValidationUtils.isValidDate("11.11 09/01/26"));
+            assertEquals(false, ValidationUtils.isValidDate("2026 03 06 11:11"));
+        }
+
+        @Test
+        void testNormalize(){
+            assertEquals("text", ValidationUtils.normalizeString("        text        "));
+            assertEquals("", ValidationUtils.normalizeString(""));
+            assertEquals("test", ValidationUtils.normalizeString("TEST"));
+            assertEquals("test", ValidationUtils.normalizeString("\ntest\n"));
+        }
+
+        @Test
+        void testThrows(){
+            assertThrows(IllegalArgumentException.class, () -> {ValidationUtils.requireNonEmpty("", "test");});
+            assertThrows(IllegalArgumentException.class, () -> {ValidationUtils.requireNonEmpty("\n\n", "test");});
+            assertThrows(IllegalArgumentException.class, () -> {ValidationUtils.requireNonEmpty("           ", "test");});
+            assertDoesNotThrow(() -> {ValidationUtils.requireNonEmpty("text", "test");});
+        }
+    }
+
+    @Nested
+    class testLog {
+
+        record testLogReord (String action, String performer, String target, String details){};
+
+        AuditLog logs = new AuditLog();
+
+        @BeforeEach
+        void initLog() {
+            logs.log("Create", "admin", "user", "Create test user");
+            logs.log("Create", "admin-reporter", "REPORT", "");
+            logs.log("UPDATE", "admin", "user", null);
+        }
+
+        @Test
+        void testAdd() {
+            assertDoesNotThrow(() -> {logs.log("Create", "admin", "user", "Create test user");});
+            assertDoesNotThrow(() -> {logs.log("Create", "admin-reporter", "REPORT", "");});
+            assertDoesNotThrow(() -> {logs.log("UPDATE", "admin", "user", null);});
+            assertThrows(IllegalArgumentException.class, () -> {logs.log("  ", "admin", "user", null);});
+            assertThrows(IllegalArgumentException.class, () -> {logs.log("create", null, "user", null);});
+        }
+
+        @Test
+        void testGetAllLog() {
+            List<AuditEntry> allLogs = new ArrayList<>();
+            allLogs.add(new AuditEntry("11","CREATE", "admin", "user", "Create test user"));
+            allLogs.add(new AuditEntry("11","CREATE", "admin-reporter", "report", ""));
+            allLogs.add(new AuditEntry("11","UPDATE", "admin", "user", null));
+
+            List<AuditEntry> logList = logs.getAll();
+
+            List<testLogReord> reseltRecords = new ArrayList<>();
+            List<testLogReord> logsRecord = new ArrayList<>();
+            for (AuditEntry value : allLogs) {
+                reseltRecords.add(new testLogReord(value.action(), value.performer(), value.target(), value.details()));
+            }
+            for (AuditEntry value : logList) {
+                logsRecord.add(new testLogReord(value.action(), value.performer(), value.target(), value.details()));
             }
 
+            assertEquals(reseltRecords, logsRecord);
+        }
 
+        @Test
+        void testGetPerformLog() {
+            List<AuditEntry> allLogs = new ArrayList<>();
+            allLogs.add(new AuditEntry("11","CREATE", "admin", "user", "Create test user"));
+            allLogs.add(new AuditEntry("11","CREATE", "admin-reporter", "report", ""));
+            allLogs.add(new AuditEntry("11","UPDATE", "admin", "user", null));
+
+            List<AuditEntry> logList = logs.getByPerformer("admin");
+
+            List<testLogReord> reseltRecords = new ArrayList<>();
+            reseltRecords.add(new testLogReord(allLogs.get(0).action(), allLogs.get(0).performer(), allLogs.get(0).target(), allLogs.get(0).details()));
+            reseltRecords.add(new testLogReord(allLogs.get(2).action(), allLogs.get(2).performer(), allLogs.get(2).target(), allLogs.get(2).details()));
+
+            List<testLogReord> logsRecord = new ArrayList<>();
+            for (AuditEntry value : logList) {
+                logsRecord.add(new testLogReord(value.action(), value.performer(), value.target(), value.details()));
+            }
+
+            assertEquals(reseltRecords, logsRecord);
+
+            logList = logs.getByPerformer("ADMIN-reporter");
+            logsRecord.clear();
+            for (AuditEntry value : logList) {
+                logsRecord.add(new testLogReord(value.action(), value.performer(), value.target(), value.details()));
+            }
+            reseltRecords.clear();
+            reseltRecords.add(new testLogReord(allLogs.get(1).action(), allLogs.get(1).performer(), allLogs.get(1).target(), allLogs.get(1).details()));
+
+            assertEquals(reseltRecords, logsRecord);
+
+            logs.printLog();
+        }
+    }
+
+    @Nested
+    class testReportGenerator{
+
+        UserManager usersManager = new UserManager();
+        RoleManager roleManager = new RoleManager();
+        AssignmentManager assignmentManager = new AssignmentManager();
+
+        private  List<AbstractRoleAssignment> assignmentRepList;
+
+        @BeforeEach
+        void initData(){
+            AssignmentMetadata metData = AssignmentMetadata.now("ADMIN", "Important reason");
+            AssignmentMetadata metData2 = AssignmentMetadata.now("admin-report", "Important reason");
+            DateTimeFormatter dataFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            TemporaryAssignment temp1 = new TemporaryAssignment(users.get(2), roles.get(2), new AssignmentMetadata("ADMIN", LocalDateTime.now().plusHours(3).format(dataFormat), "Important reason"));
+            temp1.extend(LocalDateTime.now().plusHours(3).format(dataFormat));
+            TemporaryAssignment temp2 = new TemporaryAssignment(users.get(3), roles.get(2), new AssignmentMetadata("admin-report", LocalDateTime.now().plusHours(1).format(dataFormat), "Important reason"));
+            temp2.extend(LocalDateTime.now().plusHours(1).format(dataFormat));
+            assignmentRepList = List.of(
+                    new PermanentAssignment(users.get(0), roles.get(0), metData),   // admin
+                    new TemporaryAssignment(users.get(1), roles.get(1), metData),   // admin-report
+                    temp1,   // user
+                    temp2,  // user
+                    new TemporaryAssignment(users.get(4), roles.get(3), metData2),   // guest
+                    new TemporaryAssignment(users.get(0), roles.get(3), metData2)
+            );
+
+            usersManager.add(users.get(0));
+            usersManager.add(users.get(1));
+            usersManager.add(users.get(2));
+            usersManager.add(users.get(3));
+            usersManager.add(users.get(4));
+
+//            for (User user : users){
+//                System.out.println(user.format());
+//            }
+//            System.out.println("\n\n" + "=".repeat(50) + "\n\n");
+
+            assignmentManager.add(assignmentRepList.get(0));
+            assignmentManager.add(assignmentRepList.get(1));
+            assignmentManager.add(assignmentRepList.get(2));
+            assignmentManager.add(assignmentRepList.get(3));
+            assignmentManager.add(assignmentRepList.get(4));
+            assignmentManager.add(assignmentRepList.get(5));
+//
+//            for (AbstractRoleAssignment value : assignmentRepList){
+//                System.out.println(value.summary());
+//            }
+
+            roleManager.add(roles.get(0));
+            roleManager.add(roles.get(1));
+            roleManager.add(roles.get(2));
+            roleManager.add(roles.get(3));
+        }
+
+//        permissions = List.of(
+//                new Permission("READ", "testers", "Read users1"),
+//                new Permission("ReaD", "report", "Read users2"),
+//                new Permission("Write", "report", "other text"),
+//                new Permission("READ", "user", "text read")
+//        );
+//
+//        roles = List.of(
+//                new Role("admin", "Administrator", Set.of(permissions.get(0), permissions.get(1), permissions.get(2), permissions.get(3))),
+//                new Role("admin-reporter", "Reporter",  Set.of(permissions.get(1), permissions.get(2))),
+//                new Role("user", "User", Set.of(permissions.get(3))),
+//                new Role("guest", "Guest", Set.of())
+//                );
+
+//        users = List.of(
+//                new User("admin", "Главный Админ", "admin@company.com"),
+//                new User("admin2", "Второй Админ", "john@gmail.com"),
+//                new User("maria", "Марина Семеновна", "maria@company.com"),
+//                new User("guest", "Гость", "guest@mail.ru"),
+//                new User("SERGEY", "Сергей Сергеевич", "super@mail.ru")
+//        );
+
+        @Test
+        void testUserReport(){
+            ReportGenerator reportGenerator = new ReportGenerator();
+            String resultGenerator = reportGenerator.generateUserReport(usersManager, assignmentManager);
+
+            StringBuilder reportAdmin = new StringBuilder();
+            reportAdmin.append("\n\n").append("admin:\n").append(roles.get(0).toString()).append(roles.get(3).toString());
+
+            StringBuilder reportAdmin2 = new StringBuilder();
+            reportAdmin2.append("\n\n").append("admin2:\n").append(roles.get(1).toString());
+
+            StringBuilder reportGuest = new StringBuilder();
+            reportGuest.append("\n\n").append("guest:\n").append(roles.get(2).toString());
+
+            StringBuilder reportMaria = new StringBuilder();
+            reportMaria.append("\n\n").append("maria:\n").append(roles.get(2).toString());
+
+            StringBuilder reportSegey = new StringBuilder();
+            reportSegey.append("\n\n").append("SERGEY:\n").append(roles.get(3).toString());
+
+            StringBuilder resultReport = new StringBuilder();
+            resultReport.append(reportAdmin.toString()).append("=".repeat(60)).append("\n");
+            resultReport.append(reportAdmin2.toString()).append("=".repeat(60)).append("\n");
+            resultReport.append(reportGuest.toString()).append("=".repeat(60)).append("\n");
+            resultReport.append(reportMaria.toString()).append("=".repeat(60)).append("\n");
+            resultReport.append(reportSegey.toString()).append("=".repeat(60)).append("\n");
+
+            assertEquals(resultReport.toString(), resultGenerator);
+        }
+
+        @Test
+        void testRoleReport() {
+            ReportGenerator reportGenerator = new ReportGenerator();
+            String resultGenerator = reportGenerator.generateRoleReport(roleManager, assignmentManager);
+
+            StringBuilder reportAR = new StringBuilder();
+            reportAR.append(String.format("%s (%d count):\n", roles.get(1).getName(), 1));
+            reportAR.append(String.format("   - %s\n", users.get(1).format()));
+
+            StringBuilder reportAdmin = new StringBuilder();
+            reportAdmin.append(String.format("%s (%d count):\n", roles.get(0).getName(), 1));
+            reportAdmin.append(String.format("   - %s\n", users.get(0).format()));
+
+            StringBuilder reportGuest = new StringBuilder();
+            reportGuest.append(String.format("%s (%d count):\n", roles.get(3).getName(), 2));
+            reportGuest.append(String.format("   - %s\n", users.get(0).format()));
+            reportGuest.append(String.format("   - %s\n", users.get(4).format()));
+
+            StringBuilder reportUser = new StringBuilder();
+            reportUser.append(String.format("%s (%d count):\n", roles.get(2).getName(), 2));
+            reportUser.append(String.format("   - %s\n", users.get(3).format()));
+            reportUser.append(String.format("   - %s\n", users.get(2).format()));
+
+            StringBuilder resultReport = new StringBuilder();
+            resultReport.append(reportAR.toString()).append("\n").append("=".repeat(60)).append("\n\n");
+            resultReport.append(reportAdmin.toString()).append("\n").append("=".repeat(60)).append("\n\n");
+            resultReport.append(reportGuest.toString()).append("\n").append("=".repeat(60)).append("\n\n");
+            resultReport.append(reportUser.toString()).append("\n").append("=".repeat(60)).append("\n\n");
+
+            assertEquals(resultReport.toString(), resultGenerator);
+        }
+
+        @Test
+        void testPerMat(){
+            ReportGenerator reportGenerator = new ReportGenerator();
+            String resultGenerator = reportGenerator.generatePermissionMatrix(usersManager, assignmentManager);
+
+            StringBuilder reportAdmin = new StringBuilder();
+            reportAdmin.append(String.format("%-20s | %-10s | %-10s | %-10s | %-10s |\n", "", "user", "role", "assignment", "report"));
+            reportAdmin.append("-".repeat(74) + "\n");
+            reportAdmin.append(String.format("%-20s | %-10s | %-10s | %-10s | %-10s |\n", "admin", "-R--", "----", "----", "CR--"));
+            reportAdmin.append("-".repeat(74) + "\n");
+
+            StringBuilder reportAdmin2 = new StringBuilder();
+            reportAdmin2.append(String.format("%-20s | %-10s | %-10s | %-10s | %-10s |\n", "admin2", "----", "----", "----", "CR--"));
+            reportAdmin2.append("-".repeat(74) + "\n");
+
+            StringBuilder reportGuest = new StringBuilder();
+            reportGuest.append(String.format("%-20s | %-10s | %-10s | %-10s | %-10s |\n", "guest", "-R--", "----", "----", "----"));
+            reportGuest.append("-".repeat(74) + "\n");
+
+            StringBuilder reportMaria = new StringBuilder();
+            reportMaria.append(String.format("%-20s | %-10s | %-10s | %-10s | %-10s |\n", "maria", "-R--", "----", "----", "----"));
+            reportMaria.append("-".repeat(74) + "\n");
+
+            StringBuilder reportSegey = new StringBuilder();
+            reportSegey.append(String.format("%-20s | %-10s | %-10s | %-10s | %-10s |\n", "SERGEY", "----", "----", "----", "----"));
+            reportSegey.append("-".repeat(74) + "\n");
+
+            StringBuilder resultReport = new StringBuilder();
+            resultReport.append(reportAdmin.toString());
+            resultReport.append(reportAdmin2.toString());
+            resultReport.append(reportGuest.toString());
+            resultReport.append(reportMaria.toString());
+            resultReport.append(reportSegey.toString());
+            resultReport.append("C - create\nR - read\nU - update\nD - delete");
+
+            assertEquals(resultReport.toString(), resultGenerator);
+        }
+    }
+
+    @Nested
+    class testFormat {
+
+        public static final String RED = "\u001B[31m";
+        public static final String WHITE = "\u001B[37m";
+        public static final String RESET = "\u001B[0m";
+        public static final String GREEN = "\u001B[32m";
+
+        public static final String BOLD = "\u001B[1m";
+
+        @Test
+        void testTable() {
+            String[] mass1 = {"Username", "Full name", "Email"};
+            List<String[]> mass2 = new ArrayList<>();
+            mass2.add(new String[]{"admin", "System Administrator", "admin@company.com"});
+            mass2.add(new String[]{"john_manager", "John Smith", "john@company.com"});
+            mass2.add(new String[]{"jane_analyst", "Jane Doe", "john@company.com"});
+            String resMethod = FormatUtils.formatTable(mass1, mass2);
+
+            String endRes = RED + BOLD + "+" + "-".repeat(14) + "+" + "-".repeat(22) + "+" + "-".repeat(19) + "+\n" +
+                    String.format("|%-14s|%-22s|%-19s|\n", "Username", "Full name", "Email") +
+                    "+" + "-".repeat(14) + "+" + "-".repeat(22) + "+" + "-".repeat(19) + "+" + RESET +
+                    String.format("\n|%-14s|%-22s|%-19s|\n", "admin", "System Administrator", "admin@company.com") +
+                    String.format("|%-14s|%-22s|%-19s|\n", "john_manager", "John Smith", "john@company.com") +
+                    String.format("|%-14s|%-22s|%-19s|\n", "jane_analyst", "Jane Doe", "john@company.com") +
+                    "+" + "-".repeat(14) + "+" + "-".repeat(22) + "+" + "-".repeat(19) + "+";
+
+            assertEquals(endRes, resMethod);
+        }
+
+        @Test
+        void testBox() {
+            String text = "First line\nVary many text in this line\nsmall";
+            String resMethod = FormatUtils.formatBox(text);
+            String endRes =  "+" + "-".repeat(29) + "+\n" +
+                    String.format("|%-29s|\n", "First line") +
+                    String.format("|%-29s|\n", "Vary many text in this line") +
+                    String.format("|%-29s|\n", "small") +
+                    "+" + "-".repeat(29) + "+";
+
+            assertEquals(endRes, resMethod);
+        }
+
+        @Test
+        void testHeader() {
+            String text = "Header text";
+            String resMethod = FormatUtils.formatHeader(text);
+
+            String endRes = "*".repeat(17) +
+                    "\n*  " + text + "  *\n" +
+                    "*".repeat(17);
+
+            assertEquals(endRes, resMethod);
+        }
+
+        @Test
+        void testCut() {
+            String text = "Vary long text";
+            String resMethod = FormatUtils.truncate(text, 10);
+
+            String endRes = "Vary lon...";
+
+            assertEquals(endRes, resMethod);
+        }
+
+        @Test
+        void testPad() {
+            String text = "text";
+            String resMethod = FormatUtils.padRight(text, 10);
+            String endRes = "text      ";
+            assertEquals(endRes, resMethod);
+
+            resMethod = FormatUtils.padLeft(text, 10);
+            endRes = "      text";
+            assertEquals(endRes, resMethod);
+
+            resMethod = FormatUtils.padLeft(text, 3);
+            endRes = "t...";
+            assertEquals(endRes, resMethod);
+        }
+    }
+
+    @Nested
+    class dateParsetTests {
+
+        @Test
+        void getDate() {
+            String date = DateUtils.getCurrentDate();
+
+            assertEquals("2026-03-08", date);
+        }
+
+        @Test
+        void testBefore() {
+            boolean res = DateUtils.isBefore("2026-01-02", "2026-01-01 11:11:11");
+            assertEquals(true, res);
+
+            res = DateUtils.isBefore("2026-01-02", "2026-01-03 11:11:11");
+            assertEquals(false, res);
+
+            res = DateUtils.isBefore("2026-01-01 12:11:11", "2026-01-01 11:11:11");
+            assertEquals(true, res);
+
+            res = DateUtils.isBefore("2026-01-01 10:11:11", "2026-01-01 11:11:11");
+            assertEquals(false, res);
+        }
+
+        @Test
+        void testAfter() {
+            boolean res = DateUtils.isAfter("2026-01-02", "2026-01-01 11:11:11");
+            assertEquals(false, res);
+
+            res = DateUtils.isAfter("2026-01-02", "2026-01-03 11:11:11");
+            assertEquals(true, res);
+
+            res = DateUtils.isAfter("2026-01-01 12:11:11", "2026-01-01 11:11:11");
+            assertEquals(false, res);
+
+            res = DateUtils.isAfter("2026-01-01 10:11:11", "2026-01-01 11:11:11");
+            assertEquals(true, res);
+        }
+
+        @Test
+        void testAddDays() {
+            String res = DateUtils.addDays("2026-01-02", 18);
+            assertEquals("2026-01-20", res);
+
+            res = DateUtils.addDays("2026-01-02 11:11:11", 30);
+            assertEquals("2026-02-02 11:11:11", res);
+        }
+
+        @Test
+        void testRelative() {
+            String res = DateUtils.formatRelativeTime("2026-03-03");
+            assertEquals("5 days ago", res);
+
+            res = DateUtils.formatRelativeTime("2026-03-10 11:11:11");
+            assertEquals("in 2 days", res);
         }
     }
 

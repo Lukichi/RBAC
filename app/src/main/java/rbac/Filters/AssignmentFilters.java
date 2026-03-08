@@ -43,7 +43,7 @@ public class AssignmentFilters {
     public static AssignmentFilter assignedAfter(String date) {
         return assignment -> {
             String assignedAt = assignment.metadata().assignedAt();
-            DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy MM dd HH:mm:ss");
+            DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
             LocalDateTime filterDate = LocalDateTime.parse(date, DATE_FORMAT);
             LocalDateTime assignedDate = LocalDateTime.parse(assignedAt, DATE_FORMAT);
 
@@ -57,7 +57,7 @@ public class AssignmentFilters {
     public static AssignmentFilter expiringBefore(String date) {
         return assignment -> {
             String assignedAt = assignment.metadata().assignedAt();
-            DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy MM dd HH:mm:ss");
+            DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
             LocalDateTime filterDate = LocalDateTime.parse(date, DATE_FORMAT);
             LocalDateTime assignedDate = LocalDateTime.parse(assignedAt, DATE_FORMAT);
 

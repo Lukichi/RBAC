@@ -159,3 +159,37 @@
     - void executeCommand(String commandName, Scanner scanner, RBACSystem system) - выполнение команды
     - void printHelp() - вывод информации (конда - описание)
     - void parseAndExecute(String input, Scanner scanner, RBACSystem system) - строку делим на команды и выполняем
+
+<h1>Подзадача 5: Дополнительные функции</h1>
+
+<h2>5.1. Система валидации</h2>
+
+- boolean isValidUsername(String username) - валидация ника
+- boolean isValidEmail(String email) - валидация почты
+- boolean isValidDate(String date) - валидация даты
+- String normalizeString(String input) - нормализация (удалить пробелы, нижний регистр)
+- void requireNonEmpty(String value, String fieldName) - исключение, если пустая строка
+
+<h2>5.2. Система логирования событий</h2>
+
+- AuditEntry - запись для логов
+  - timestamp - время
+  - action - что произошло
+  - performer - автор исполнения
+  - target - над чем выполнилось (ресурс)
+  - details - прочая информация
+- AuditLog - реализация логов
+  - List<AuditEntry> entries — записи аудита (событий)
+  - void log(String action, String performer, String target, String details) - создать новую запись
+  - List<AuditEntry> getAll() - получить все записи
+  - List<AuditEntry> getByPerformer(String performer) - записи конкретного автора
+  - List<AuditEntry> getByAction(String action) - записи определенного действия
+  - void printLog() - вывод всех записей
+  - void saveToFile(String filename) - сохранить в файл (JSON)
+
+<h2>5.3. Экспорт отчётов</h2>
+
+- String generateUserReport(UserManager userManager, AssignmentManager assignmentManager) — отчёт по всем пользователям с их ролями
+- String generateRoleReport(RoleManager roleManager, AssignmentManager assignmentManager) — отчёт по ролям с количеством пользователей
+- String generatePermissionMatrix(UserManager userManager, AssignmentManager assignmentManager) — матрица прав (пользователи × ресурсы)
+- void exportToFile(String report, String filename) — сохранение отчёта в файл (txt)
