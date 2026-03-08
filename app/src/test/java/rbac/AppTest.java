@@ -961,10 +961,11 @@ class AppTest {
             String resultGenerator = reportGenerator.generateRoleReport(roleManager, assignmentManager);
 
             StringBuilder reportAR = new StringBuilder();
+
+            StringBuilder reportAdmin = new StringBuilder();
             reportAR.append(String.format("%s (%d count):\n", roles.get(1).getName(), 1));
             reportAR.append(String.format("   - %s\n", users.get(1).format()));
 
-            StringBuilder reportAdmin = new StringBuilder();
             reportAdmin.append(String.format("%s (%d count):\n", roles.get(0).getName(), 1));
             reportAdmin.append(String.format("   - %s\n", users.get(0).format()));
 
@@ -979,8 +980,8 @@ class AppTest {
             reportUser.append(String.format("   - %s\n", users.get(2).format()));
 
             StringBuilder resultReport = new StringBuilder();
-            resultReport.append(reportAR.toString()).append("\n").append("=".repeat(60)).append("\n\n");
             resultReport.append(reportAdmin.toString()).append("\n").append("=".repeat(60)).append("\n\n");
+            resultReport.append(reportAR.toString()).append("\n").append("=".repeat(60)).append("\n\n");
             resultReport.append(reportGuest.toString()).append("\n").append("=".repeat(60)).append("\n\n");
             resultReport.append(reportUser.toString()).append("\n").append("=".repeat(60)).append("\n\n");
 
