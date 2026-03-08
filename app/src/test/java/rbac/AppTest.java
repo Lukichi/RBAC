@@ -4,6 +4,7 @@ package rbac;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
 import rbac.CommandAndMenuSystem.RBACSystem;
 import rbac.Components.*;
 import rbac.Filters.*;
@@ -11,6 +12,7 @@ import rbac.LogSystem.ReportGenerator;
 import rbac.Managers.AssignmentManager;
 import rbac.Managers.RoleManager;
 import rbac.Managers.UserManager;
+import rbac.OtherFunctional.DateUtils;
 import rbac.OtherFunctional.FormatUtils;
 import rbac.Sorters.AssignmentSorters;
 import rbac.Sorters.RoleSorters;
@@ -1103,6 +1105,65 @@ class AppTest {
             resMethod = FormatUtils.padLeft(text, 3);
             endRes = "t...";
             assertEquals(endRes, resMethod);
+        }
+    }
+
+    @Nested
+    class dateParsetTests {
+
+        @Test
+        void getDate() {
+            String date = DateUtils.getCurrentDate();
+
+            assertEquals("2026-03-08", date);
+        }
+
+        @Test
+        void testBefore() {
+            boolean res = DateUtils.isBefore("2026-01-02", "2026-01-01 11:11:11");
+            assertEquals(true, res);
+
+            res = DateUtils.isBefore("2026-01-02", "2026-01-03 11:11:11");
+            assertEquals(false, res);
+
+            res = DateUtils.isBefore("2026-01-01 12:11:11", "2026-01-01 11:11:11");
+            assertEquals(true, res);
+
+            res = DateUtils.isBefore("2026-01-01 10:11:11", "2026-01-01 11:11:11");
+            assertEquals(false, res);
+        }
+
+        @Test
+        void testAfter() {
+            boolean res = DateUtils.isAfter("2026-01-02", "2026-01-01 11:11:11");
+            assertEquals(false, res);
+
+            res = DateUtils.isAfter("2026-01-02", "2026-01-03 11:11:11");
+            assertEquals(true, res);
+
+            res = DateUtils.isAfter("2026-01-01 12:11:11", "2026-01-01 11:11:11");
+            assertEquals(false, res);
+
+            res = DateUtils.isAfter("2026-01-01 10:11:11", "2026-01-01 11:11:11");
+            assertEquals(true, res);
+        }
+
+        @Test
+        void testAddDays() {
+            String res = DateUtils.addDays("2026-01-02", 18);
+            assertEquals("2026-01-20", res);
+
+            res = DateUtils.addDays("2026-01-02 11:11:11", 30);
+            assertEquals("2026-02-02 11:11:11", res);
+        }
+
+        @Test
+        void testRelative() {
+            String res = DateUtils.formatRelativeTime("2026-03-03");
+            assertEquals("5 days ago", res);
+
+            res = DateUtils.formatRelativeTime("2026-03-10 11:11:11");
+            assertEquals("in 2 days", res);
         }
     }
 

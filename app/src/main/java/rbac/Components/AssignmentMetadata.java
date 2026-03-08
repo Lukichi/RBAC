@@ -1,5 +1,6 @@
 package rbac.Components;
 
+import rbac.OtherFunctional.DateUtils;
 import rbac.SystemValidation.ValidationUtils;
 
 import java.time.LocalDateTime;
@@ -16,7 +17,7 @@ public record AssignmentMetadata(String assignedBy, String assignedAt, String re
     }
 
     public static AssignmentMetadata now(String assignedBy, String reason){
-        String time = LocalDateTime.now().format(DATE_FORMAT);
+        String time = DateUtils.getCurrentDateTime();
         return new AssignmentMetadata(assignedBy, time, reason);
     }
 

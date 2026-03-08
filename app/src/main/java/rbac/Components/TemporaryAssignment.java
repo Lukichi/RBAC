@@ -1,5 +1,6 @@
 package rbac.Components;
 
+import rbac.OtherFunctional.DateUtils;
 import rbac.SystemValidation.ValidationUtils;
 
 import java.time.LocalDateTime;
@@ -49,17 +50,11 @@ public class TemporaryAssignment extends  AbstractRoleAssignment{
 
     @Override
     public boolean isActive() {
-        LocalDateTime nowDate = LocalDateTime.now();
-        LocalDateTime thisDate = LocalDateTime.parse(this.expiresAt, DATE_FORMAT);
-
-        return nowDate.isBefore(thisDate);
+        return DateUtils.isAfter(DateUtils.getCurrentDateTime(), expiresAt);
     }
 
     public boolean isActive(String date) {
-        LocalDateTime nowDate = LocalDateTime.parse(date, DATE_FORMAT);
-        LocalDateTime thisDate = LocalDateTime.parse(this.expiresAt, DATE_FORMAT);
-
-        return nowDate.isBefore(thisDate);
+        return DateUtils.isAfter(date, expiresAt);
     }
 
     @Override
@@ -81,15 +76,7 @@ public class TemporaryAssignment extends  AbstractRoleAssignment{
     }
 
     private String getTimeRemaining(){
-        LocalDateTime nowDate = LocalDateTime.now();
-        LocalDateTime thisDate = LocalDateTime.parse(this.expiresAt, DATE_FORMAT);
-
-        long days = Math.abs(ChronoUnit.DAYS.between(nowDate, thisDate));
-
-        if (isActive())
-            return "through " + days + " days";
-
-        return days + " days ago";
+        return DateUtils.formatRelativeTime(expiresAt);
     }
 
     @Override
