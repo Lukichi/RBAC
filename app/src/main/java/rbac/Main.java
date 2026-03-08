@@ -135,7 +135,7 @@ public class Main {
 
         Scanner scanner = new Scanner(System.in);
         while (true) {
-            System.out.println("\nInput command:");
+            System.out.print("\nInput command: ");
             String command = scanner.nextLine();
 
             parser.parseAndExecute(command, scanner, system);
