@@ -667,7 +667,7 @@ class AppTest {
             assertEquals(resultFindOne, resultFindOneManager);
 
             List<Role> roleList = roleManager.findRolesWithPermission("read", "REport");  // порядок обратный (обратный по отношению к добавлению ролей)
-            List<Role> result = List.of(roles.get(1), roles.get(0));
+            List<Role> result = List.of(roles.get(0), roles.get(1));
 
             for (Role value : result)
                 System.out.println(value.toString());

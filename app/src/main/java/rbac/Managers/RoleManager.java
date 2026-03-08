@@ -146,7 +146,7 @@ public class RoleManager implements Repository<Role> {
             throw new IllegalArgumentException("Invalid resource format. resource must contain only letters");
 
         List<Role> data = null;
-        data = rolesData.values().stream().filter(role -> role.getPermissions().stream().anyMatch(value -> value.matches(permissionName.toUpperCase(), resource.toLowerCase()))).toList();
+        data = rolesData.values().stream().filter(role -> role.getPermissions().stream().anyMatch(value -> value.matches(permissionName.toUpperCase(), resource.toLowerCase()))).toList().stream().sorted(RoleSorters.byName()).toList();
         return data;
     }
 
