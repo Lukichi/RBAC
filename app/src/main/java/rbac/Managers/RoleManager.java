@@ -4,6 +4,7 @@ import rbac.Components.Repository;
 import rbac.Filters.RoleFilter;
 import rbac.Components.Permission;
 import rbac.Components.Role;
+import rbac.Sorters.RoleSorters;
 
 import java.util.*;
 import java.util.regex.Pattern;
@@ -14,6 +15,7 @@ public class RoleManager implements Repository<Role> {
     private static final Pattern RES_PATTERN = Pattern.compile("^[a-z]+$");
 
     private Map<String, Role> rolesData = new HashMap<>();
+    private Map<String, Role> rolesDataName = new HashMap<>();
 
     @Override
     public void add(Role item) {
@@ -21,12 +23,13 @@ public class RoleManager implements Repository<Role> {
             throw new IllegalArgumentException("Role cannot be null");
         }
 
-        String key = item.getName();
+        String key = item.getId();
         if (rolesData.containsKey(key)) {
             throw new IllegalArgumentException("Role with name '" + key + "' already create");
         }
 
         rolesData.put(key, item);
+        rolesDataName.put(item.getName(), item);
     }
 
     @Override
@@ -35,8 +38,10 @@ public class RoleManager implements Repository<Role> {
             throw new IllegalArgumentException("Role cannot be null");
         }
 
-        String key = item.getName();
+        String key = item.getId();
+        String key2 = item.getName();
         Role res = rolesData.remove(key);
+        Role res2 = rolesDataName.remove(key2);
         return res != null;
     }
 
@@ -51,7 +56,7 @@ public class RoleManager implements Repository<Role> {
 
     @Override
     public List<Role> findAll() {
-        return rolesData.values().stream().toList();
+        return rolesData.values().stream().toList().stream().sorted(RoleSorters.byName()).toList();
     }
 
     @Override
@@ -65,7 +70,11 @@ public class RoleManager implements Repository<Role> {
     }
 
     public Optional<Role> findByName(String name){
-        return findById(name);
+        if (name == null || name.trim().isEmpty()) {
+            return Optional.empty();
+        }
+
+        return Optional.ofNullable(rolesDataName.get(name));
     }
 
     public List<Role> findByFilter(RoleFilter filter){
@@ -87,7 +96,7 @@ public class RoleManager implements Repository<Role> {
         return afterSort;
     }
 
-    public boolean exists(String name){
+    public boolean exists(String name) {
         if (name == null || name.trim().isEmpty()) {
             return false;
         }
@@ -96,7 +105,7 @@ public class RoleManager implements Repository<Role> {
     }
 
     public void addPermissionToRole(String roleName, Permission permission){
-        Role data = rolesData.get(roleName);
+        Role data = findByName(roleName).orElse(null);
 
         if (data == null)
             throw new IllegalArgumentException("Role with name '" + roleName + "' not create");
@@ -106,7 +115,8 @@ public class RoleManager implements Repository<Role> {
 
         data.addPermission(permission);
 
-        rolesData.put(roleName, data);
+        rolesData.put(data.getId(), data);
+        rolesDataName.put(roleName, data);
     }
 
     public void removePermissionFromRole(String roleName, Permission permission){
@@ -120,7 +130,8 @@ public class RoleManager implements Repository<Role> {
 
         data.removePermission(permission);
 
-        rolesData.put(roleName, data);
+        rolesData.put(data.getId(), data);
+        rolesDataName.put(roleName, data);
     }
 
     public List<Role> findRolesWithPermission(String permissionName, String resource){
