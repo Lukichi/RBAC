@@ -331,7 +331,7 @@ public class CommandRegistry {
             }
 
             String roleNameNew = ConsoleUtils.promptString(scanner, "Введите имя роли (оставить пустым, если не хотите изменять): ", false);
-            String roleDescriptionNew = ConsoleUtils.promptString(scanner, "Введите имя роли (оставить пустым, если не хотите изменять): ", false);
+            String roleDescriptionNew = ConsoleUtils.promptString(scanner, "Введите описание роли (оставить пустым, если не хотите изменять): ", false);
 
             if (roleNameNew.trim().isEmpty())
                 roleNameNew = roleName;
@@ -573,8 +573,7 @@ public class CommandRegistry {
         });
 
         parser.registerCommand("revoke-role", "Отозвать роль у пользователя", (scanner, system) -> {
-            System.out.print("Введите имя пользователя: ");
-            String username = scanner.nextLine();
+            String username =  ConsoleUtils.promptString(scanner, "Введите имя пользователя: ", true);
 
             Optional<User> optionalUser  = RBACSystem.getUserManager().findByUsername(username);
             User user = optionalUser.orElse(null);
@@ -585,7 +584,6 @@ public class CommandRegistry {
 
             List<RoleAssignment> roleList = RBACSystem.getAssignmentManager().findByUser(user);
             RoleAssignment role = ConsoleUtils.promptChoice(scanner, "Роли пользователя: ", roleList);
-            scanner.nextLine();
 
             AbstractRoleAssignment roleAssignment = (AbstractRoleAssignment) role;
             String roleType = roleAssignment.assignmentType();
@@ -775,7 +773,7 @@ public class CommandRegistry {
                     "   5) Назначённые после даты\n" +
                     "   6) Истекающие до даты";
 
-            int type = ConsoleUtils.promptInt(scanner, text, 1, 4);
+            int type = ConsoleUtils.promptInt(scanner, text, 1, 6);
             switch (type){
                 case 1: {
                     parser.parseAndExecute("assignment-list-user", scanner, system);
@@ -835,7 +833,6 @@ public class CommandRegistry {
                             "   1) Активные\n" +
                             "   2) Неактивные";
                     int typeAssigment = ConsoleUtils.promptInt(scanner, textType, 1, 2);
-                    scanner.nextLine();
                     switch (typeAssigment){
                         case 1:{
                             List<RoleAssignment> roleList = RBACSystem.getAssignmentManager().findByFilter(AssignmentFilters.activeOnly());
@@ -1166,7 +1163,6 @@ public class CommandRegistry {
         });
 
         parser.registerCommand("load", "Загрузка из JSON файла", (scanner, system) -> {
-            System.out.print("Введите имя файла для загрузки: ");
             String filename = ConsoleUtils.promptString(scanner, "Введите имя файла для загрузки", true);
             filename += ".json";
 
@@ -1342,14 +1338,14 @@ public class CommandRegistry {
                         }
 
                         String assignedBy = "";
-                        Pattern assignedByPattern = Pattern.compile("\"type\"\\s*:\\s*\"([^\"]+)\"");
+                        Pattern assignedByPattern = Pattern.compile("\"assignedBy\"\\s*:\\s*\"([^\"]+)\"");
                         Matcher assignedByMather = assignedByPattern.matcher(assignment);
                         if (assignedByMather.find()) {
                             assignedBy = assignedByMather.group(1);
                         }
 
                         String reason = "";
-                        Pattern reasonPattern = Pattern.compile("\"type\"\\s*:\\s*\"([^\"]+)\"");
+                        Pattern reasonPattern = Pattern.compile("\"reason\"\\s*:\\s*\"([^\"]+)\"");
                         Matcher reasonMather = reasonPattern.matcher(assignment);
                         if (reasonMather.find()) {
                             reason = reasonMather.group(1);

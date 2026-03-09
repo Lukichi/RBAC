@@ -18,7 +18,6 @@ public record AssignmentMetadata(String assignedBy, String assignedAt, String re
 
     public static AssignmentMetadata now(String assignedBy, String reason){
         ValidationUtils.requireNonEmpty(ValidationUtils.normalizeString(assignedBy), "AssignedBy");
-        ValidationUtils.requireNonEmpty(ValidationUtils.normalizeString(reason), "Reason");
 
         String time = DateUtils.getCurrentDateTime();
         return new AssignmentMetadata(assignedBy, time, reason);

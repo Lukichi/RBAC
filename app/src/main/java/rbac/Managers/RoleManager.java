@@ -101,7 +101,7 @@ public class RoleManager implements Repository<Role> {
             return false;
         }
 
-        return rolesData.containsKey(name);
+        return rolesDataName.containsKey(name);
     }
 
     public void addPermissionToRole(String roleName, Permission permission){
@@ -120,7 +120,7 @@ public class RoleManager implements Repository<Role> {
     }
 
     public void removePermissionFromRole(String roleName, Permission permission){
-        Role data = rolesData.get(roleName);
+        Role data = rolesDataName.get(roleName);
 
         if (data == null)
             throw new IllegalArgumentException("Role with name '" + roleName + "' not create");
