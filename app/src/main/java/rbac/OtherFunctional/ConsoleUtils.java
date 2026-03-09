@@ -1,9 +1,6 @@
 package rbac.OtherFunctional;
 
-import rbac.Components.Permission;
-import rbac.Components.Role;
-import rbac.Components.RoleAssignment;
-import rbac.Components.User;
+import rbac.Components.*;
 
 import java.util.List;
 import java.util.Scanner;
@@ -91,16 +88,16 @@ public class ConsoleUtils {
         } else if (option instanceof Permission perm) {
             sb.append(String.format("%-3d) %-20s | %-30s | %s", index, perm.name(), perm.resource(), perm.description()));
 
-        } else if (option instanceof RoleAssignment assig) {
+        } else if (option instanceof AbstractRoleAssignment assig) {
             String status = assig.isActive() ?  "ACTIVE" : "INACTIVE";
             sb.append(String.format("%-3d) %-8s | %-10s | %-20s | %-20s | %-20s | %-8s | %s",
-                    assig.assignmentType(), assig.role().getName(), assig.user().username(), assig.metadata().assignedBy(),
+                    index, assig.assignmentType(), assig.role().getName(), assig.user().username(), assig.metadata().assignedBy(),
                     assig.metadata().assignedAt(), status, assig.metadata().reason()));
 
         } else {
             sb.append(option.toString());
         }
-        sb.append("\n" + "-".repeat(100));
+        sb.append("\n" + "-".repeat(200));
 
         return sb.toString();
     }
