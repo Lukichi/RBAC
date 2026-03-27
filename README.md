@@ -193,3 +193,10 @@
 - String generateRoleReport(RoleManager roleManager, AssignmentManager assignmentManager) — отчёт по ролям с количеством пользователей
 - String generatePermissionMatrix(UserManager userManager, AssignmentManager assignmentManager) — матрица прав (пользователи × ресурсы)
 - void exportToFile(String report, String filename) — сохранение отчёта в файл (txt)
+
+<h2>Многопоточность</h2>
+
+- putIfAbsent - добавляет, если значения ещё нет (пока другой поток не добавил), если значение уже сть, по вернёт его
+- compute - в ConcurrentHashMap блокирует значение с которым работает
+- 
+
