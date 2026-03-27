@@ -6,13 +6,14 @@ import rbac.Components.User;
 import rbac.SystemValidation.ValidationUtils;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 
 public class UserManager implements Repository<User> {
 
     private static final Pattern FN_PATTER = Pattern.compile("^[a-zA-Z\\s]+$");
 
-    private Map<String, User> usersData = new HashMap<>();
+    private Map<String, User> usersData = new ConcurrentHashMap<>();
 
     @Override
     public void add(User item) {
@@ -21,11 +22,11 @@ public class UserManager implements Repository<User> {
         }
 
         String key = item.username();
-        if (usersData.containsKey(key)) {
-            throw new IllegalArgumentException("User with username '" + key + "' already register");
-        }
 
-        usersData.put(key, item);
+        User previous = usersData.putIfAbsent(key, item);
+        if (previous != null) {
+            throw new IllegalArgumentException("User with username '" + key + "' already registered");
+        }
     }
 
     public boolean remove(User item) {
@@ -66,12 +67,13 @@ public class UserManager implements Repository<User> {
         if (email == null || email.trim().isEmpty())
             return Optional.empty();
 
-
-        return usersData.values().stream().filter(user -> email.equalsIgnoreCase(user.email())).findFirst();
+        List<User> helpList = new ArrayList<>(usersData.values());
+        return helpList.stream().filter(user -> email.equalsIgnoreCase(user.email())).findFirst();
     }
 
     public List<User> findByFilter(UserFilter filter){
-        return usersData.values().stream().filter(filter::test).toList();
+        List<User> helpList = new ArrayList<>(usersData.values());
+        return helpList.stream().filter(filter::test).toList();
     }
 
     public List<User> findAll(UserFilter filter, Comparator<User> sorter){
@@ -98,36 +100,34 @@ public class UserManager implements Repository<User> {
     }
 
     public void update(String username, String newFullName, String newEmail){
-        String newFN, newE;
-
-        User user = usersData.get(username);
-
-        if (user == null)
-            throw new IllegalArgumentException("User with username '" + username + "' not register");
-
         if (newFullName == null && newEmail == null)
             return;
 
-        if (newFullName.isEmpty()) {
-            newFN = user.fullName();
-        }
-        else {
-            if (!FN_PATTER.matcher((newFullName)).matches())
-                throw new IllegalArgumentException("Invalid format full name. Username must not contain special characters and numbers");
-            newFN = newFullName;
-        }
+        usersData.compute(username, (key, user) -> {
+            String newFN, newE;
 
-        if (newEmail.isEmpty())
-            newE = user.email();
-        else {
-            if (!ValidationUtils.isValidEmail(newEmail))
-                throw new IllegalArgumentException("Invalid format email");
-            newE = newEmail;
-        }
+            if (user == null)
+                throw new IllegalArgumentException("User with username '" + username + "' not register");
 
-        User newUser = new User(username, newFN, newE);
+            if (newFullName.isEmpty()) {
+                newFN = user.fullName();
+            }
+            else {
+                if (!FN_PATTER.matcher((newFullName)).matches())
+                    throw new IllegalArgumentException("Invalid format full name. Username must not contain special characters and numbers");
+                newFN = newFullName;
+            }
 
-        usersData.put(username, newUser);
+            if (newEmail.isEmpty())
+                newE = user.email();
+            else {
+                if (!ValidationUtils.isValidEmail(newEmail))
+                    throw new IllegalArgumentException("Invalid format email");
+                newE = newEmail;
+            }
+
+            return new User(username, newFN, newE);
+        });
     }
 
     @Override
