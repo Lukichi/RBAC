@@ -5,11 +5,12 @@ import rbac.Filters.AssignmentFilter;
 import rbac.Sorters.AssignmentSorters;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public class AssignmentManager implements Repository<RoleAssignment> {
 
-    private Map<String, RoleAssignment> assigmentsData = new HashMap<>();
+    private Map<String, RoleAssignment> assigmentsData = new ConcurrentHashMap<>();
 
     @Override
     public void add(RoleAssignment item) {
@@ -22,7 +23,10 @@ public class AssignmentManager implements Repository<RoleAssignment> {
             throw new IllegalArgumentException("RoleAssignment with name '" + key + "' already create");
         }
 
-        assigmentsData.put(key, item);
+        RoleAssignment previous = assigmentsData.putIfAbsent(key, item);
+        if (previous != null) {
+            throw new IllegalArgumentException("RoleAssignment with name '" + key + "' already create");
+        }
     }
 
     @Override
@@ -64,7 +68,8 @@ public class AssignmentManager implements Repository<RoleAssignment> {
         if (user == null)
             throw new IllegalArgumentException("User cannot be null");
 
-        return assigmentsData.values().stream().filter(assignment -> assignment.user().equals(user)).toList();
+        List<RoleAssignment> helpList = new ArrayList<>(assigmentsData.values());
+        return helpList.stream().filter(assignment -> assignment.user().equals(user)).toList();
     }
 
     public List<RoleAssignment> findByRole(Role role){
@@ -75,7 +80,8 @@ public class AssignmentManager implements Repository<RoleAssignment> {
     }
 
     public List<RoleAssignment> findByFilter(AssignmentFilter filter){
-        return  assigmentsData.values().stream().filter(filter::test).toList();
+        List<RoleAssignment> helpList = new ArrayList<>(assigmentsData.values());
+        return  helpList.stream().filter(filter::test).toList();
     }
 
     public List<RoleAssignment> findAll(AssignmentFilter filter, Comparator<RoleAssignment> sorter){
@@ -94,18 +100,21 @@ public class AssignmentManager implements Repository<RoleAssignment> {
     }
 
     public List<RoleAssignment> getActiveAssignments(){
-        return assigmentsData.values().stream().filter(assignment -> assignment.isActive()).toList().stream().sorted(AssignmentSorters.byUsername()).toList();
+        List<RoleAssignment> helpList = new ArrayList<>(assigmentsData.values());
+        return helpList.stream().filter(assignment -> assignment.isActive()).toList().stream().sorted(AssignmentSorters.byUsername()).toList();
     }
 
     public List<RoleAssignment> getExpiredAssignments(){
-        return assigmentsData.values().stream().filter(assignment -> !assignment.isActive()).toList().stream().sorted(AssignmentSorters.byUsername()).toList();
+        List<RoleAssignment> helpList = new ArrayList<>(assigmentsData.values());
+        return helpList.stream().filter(assignment -> !assignment.isActive()).toList().stream().sorted(AssignmentSorters.byUsername()).toList();
     }
 
     public boolean userHasRole(User user, Role role){
         if (user == null)
             throw new IllegalArgumentException("User cannot be null");
 
-        List<RoleAssignment> result = assigmentsData.values().stream().filter(assignment -> assignment.user().equals(user)).toList();
+        List<RoleAssignment> helpList = new ArrayList<>(assigmentsData.values());
+        List<RoleAssignment> result = helpList.stream().filter(assignment -> assignment.user().equals(user)).toList();
         result = result.stream().filter(assignment -> assignment.role().equals(role)).toList();
 
         return !result.isEmpty();
@@ -119,7 +128,8 @@ public class AssignmentManager implements Repository<RoleAssignment> {
         if (resource == null)
             throw new IllegalArgumentException("Resource cannot be null");
 
-        List<RoleAssignment> result = assigmentsData.values().stream().filter(assignment -> assignment.user().equals(user)).toList();
+        List<RoleAssignment> helpList = new ArrayList<>(assigmentsData.values());
+        List<RoleAssignment> result = helpList.stream().filter(assignment -> assignment.user().equals(user)).toList();
 
         boolean flag = false;
         for (RoleAssignment assignment : result){
@@ -136,34 +146,41 @@ public class AssignmentManager implements Repository<RoleAssignment> {
             return Collections.emptySet();
         }
 
-        return assigmentsData.values().stream().filter(assignment -> assignment.user().equals(user))
+        List<RoleAssignment> helpList = new ArrayList<>(assigmentsData.values());
+        return helpList.stream().filter(assignment -> assignment.user().equals(user))
                 .flatMap(assignment -> assignment.role().getPermissions().stream()).collect(Collectors.toSet());
     }
 
     public void revokeAssignment(String assignmentId){
-        RoleAssignment assignment = assigmentsData.get(assignmentId);
-        if (assignment == null)
-            throw new IllegalArgumentException("Assignment with id '" + assignmentId + "' not found");
+        assigmentsData.compute(assignmentId, (id, assignment) -> {
+            if (assignment == null) {
+                throw new IllegalArgumentException("Assignment with id '" + id + "' not found");
+            }
 
-        if (!(assignment instanceof PermanentAssignment))
-            throw new IllegalArgumentException("Only permanent assignments can be revoked");
-        PermanentAssignment permAssignment = (PermanentAssignment) assignment;
-        permAssignment.revoke();
+            if (!(assignment instanceof PermanentAssignment)) {
+                throw new IllegalArgumentException("Only permanent assignments can be revoked");
+            }
 
-        assigmentsData.put(assignmentId, permAssignment);
+            PermanentAssignment permAssignment = (PermanentAssignment) assignment;
+            permAssignment.revoke();
+            return permAssignment;
+        });
     }
 
     public void extendTemporaryAssignment(String assignmentId, String newExpirationDate){
-        RoleAssignment assignment = assigmentsData.get(assignmentId);
-        if (assignment == null)
-            throw new IllegalArgumentException("Assignment with id '" + assignmentId + "' not found");
+        assigmentsData.compute(assignmentId, (id, assignment) -> {
+            if (assignment == null) {
+                throw new IllegalArgumentException("Assignment with id '" + id + "' not found");
+            }
 
-        if (!(assignment instanceof TemporaryAssignment))
-            throw new IllegalArgumentException("Only temporary assignments can be extended");
-        TemporaryAssignment tempAssignment = (TemporaryAssignment) assignment;
-        tempAssignment.extend(newExpirationDate);
+            if (!(assignment instanceof TemporaryAssignment)) {
+                throw new IllegalArgumentException("Only temporary assignments can be extended");
+            }
 
-        assigmentsData.put(assignmentId, tempAssignment);
+            TemporaryAssignment tempAssignment = (TemporaryAssignment) assignment;
+            tempAssignment.extend(newExpirationDate);
+            return tempAssignment;
+        });
     }
 
     @Override
