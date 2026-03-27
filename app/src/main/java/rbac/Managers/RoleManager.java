@@ -1,12 +1,14 @@
 package rbac.Managers;
 
 import rbac.Components.Repository;
+import rbac.Components.RoleAssignment;
 import rbac.Filters.RoleFilter;
 import rbac.Components.Permission;
 import rbac.Components.Role;
 import rbac.Sorters.RoleSorters;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 
 public class RoleManager implements Repository<Role> {
@@ -14,8 +16,8 @@ public class RoleManager implements Repository<Role> {
     private static final Pattern NAME_PATTERN = Pattern.compile("^[A-Z]+$");
     private static final Pattern RES_PATTERN = Pattern.compile("^[a-z]+$");
 
-    private Map<String, Role> rolesData = new HashMap<>();
-    private Map<String, Role> rolesDataName = new HashMap<>();
+    private Map<String, Role> rolesData = new ConcurrentHashMap<>();
+    private Map<String, Role> rolesDataName = new ConcurrentHashMap<>();
 
     @Override
     public void add(Role item) {
@@ -28,8 +30,17 @@ public class RoleManager implements Repository<Role> {
             throw new IllegalArgumentException("Role with name '" + key + "' already create");
         }
 
-        rolesData.put(key, item);
-        rolesDataName.put(item.getName(), item);
+        Role previous = rolesData.putIfAbsent(key, item);
+        if (previous != null) {
+            throw new IllegalArgumentException("Role with name '" + key + "' already create");
+        }
+
+
+        Role previous2 = rolesDataName.putIfAbsent(item.getName(), item);
+        if (previous2 != null) {
+            rolesData.remove(key);
+            throw new IllegalArgumentException("Role with name '" + key + "' already create");
+        }
     }
 
     @Override
@@ -42,7 +53,8 @@ public class RoleManager implements Repository<Role> {
         String key2 = item.getName();
         Role res = rolesData.remove(key);
         Role res2 = rolesDataName.remove(key2);
-        return res != null;
+
+        return res != null || res2 != null;
     }
 
     @Override
@@ -56,7 +68,7 @@ public class RoleManager implements Repository<Role> {
 
     @Override
     public List<Role> findAll() {
-        return rolesData.values().stream().toList().stream().sorted(RoleSorters.byName()).toList();
+        return rolesData.values().stream().sorted(RoleSorters.byName()).toList();
     }
 
     @Override
@@ -78,7 +90,8 @@ public class RoleManager implements Repository<Role> {
     }
 
     public List<Role> findByFilter(RoleFilter filter){
-        return rolesData.values().stream().filter(filter::test).toList();
+        List<Role> helpList = new ArrayList<>( rolesData.values());
+        return helpList.stream().filter(filter::test).toList();
     }
 
     public List<Role> findAll(RoleFilter filter, Comparator<Role> sorter){
@@ -105,33 +118,33 @@ public class RoleManager implements Repository<Role> {
     }
 
     public void addPermissionToRole(String roleName, Permission permission){
-        Role data = findByName(roleName).orElse(null);
-
-        if (data == null)
-            throw new IllegalArgumentException("Role with name '" + roleName + "' not create");
-
         if (permission == null)
             return;
 
-        data.addPermission(permission);
+        Role updated = rolesDataName.compute(roleName, (id, role) -> {
+            if (role == null) {
+                throw new IllegalArgumentException("Role with name '" + roleName + "' not found");
+            }
+            role.addPermission(permission);
+            return role;
+        });
 
-        rolesData.put(data.getId(), data);
-        rolesDataName.put(roleName, data);
+        rolesData.put(roleName, updated);
     }
 
     public void removePermissionFromRole(String roleName, Permission permission){
-        Role data = rolesDataName.get(roleName);
-
-        if (data == null)
-            throw new IllegalArgumentException("Role with name '" + roleName + "' not create");
-
         if (permission == null)
             return;
 
-        data.removePermission(permission);
+        Role updated = rolesDataName.compute(roleName, (id, role) -> {
+            if (role == null) {
+                throw new IllegalArgumentException("Role with name '" + roleName + "' not found");
+            }
+            role.removePermission(permission);
+            return role;
+        });
 
-        rolesData.put(data.getId(), data);
-        rolesDataName.put(roleName, data);
+        rolesData.put(roleName, updated);
     }
 
     public List<Role> findRolesWithPermission(String permissionName, String resource){
@@ -145,9 +158,8 @@ public class RoleManager implements Repository<Role> {
         if (!RES_PATTERN.matcher(resource.toLowerCase()).matches())
             throw new IllegalArgumentException("Invalid resource format. resource must contain only letters");
 
-        List<Role> data = null;
-        data = rolesData.values().stream().filter(role -> role.getPermissions().stream().anyMatch(value -> value.matches(permissionName.toUpperCase(), resource.toLowerCase()))).toList().stream().sorted(RoleSorters.byName()).toList();
-        return data;
+        List<Role> helpList = new ArrayList<>( rolesData.values());
+        return helpList.stream().filter(role -> role.getPermissions().stream().anyMatch(value -> value.matches(permissionName.toUpperCase(), resource.toLowerCase()))).toList().stream().sorted(RoleSorters.byName()).toList();
     }
 
     @Override
