@@ -3,6 +3,7 @@ package rbac;
 import rbac.CommandAndMenuSystem.CommandParser;
 import rbac.CommandAndMenuSystem.CommandRegistry;
 import rbac.CommandAndMenuSystem.RBACSystem;
+import rbac.OtherFunctional.DateUtils;
 import rbac.OtherFunctional.FormatUtils;
 
 import java.util.*;
@@ -130,6 +131,7 @@ public class Main {
         RBACSystem system = new RBACSystem();
         system.initialize();
         system.setCurrentUser("admin");
+        system.startExpiredAssignmentsCleaner(20);
         CommandParser parser = new CommandParser();
         CommandRegistry.registerCommands(parser);
 

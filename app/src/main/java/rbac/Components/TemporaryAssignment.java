@@ -14,6 +14,7 @@ public class TemporaryAssignment extends  AbstractRoleAssignment{
 
     private String expiresAt;
     private boolean autoRenew;
+    private boolean active;
 
     public String getExpiresAt(){
         return expiresAt;
@@ -26,6 +27,7 @@ public class TemporaryAssignment extends  AbstractRoleAssignment{
         super(user, role, metadata);
         this.expiresAt = LocalDateTime.now().format(DATE_FORMAT);
         this.autoRenew = false;
+        this.active = true;
     }
 
     public TemporaryAssignment(User user, Role role, AssignmentMetadata metadata, String expiresAt, boolean autoRenew) {
@@ -39,6 +41,7 @@ public class TemporaryAssignment extends  AbstractRoleAssignment{
 
         this.expiresAt = expiresAt;
         this.autoRenew = autoRenew;
+        this.active = true;
     }
 
     private boolean checkDateFormat(String date){
@@ -48,9 +51,17 @@ public class TemporaryAssignment extends  AbstractRoleAssignment{
             return false;
     }
 
+    public void deactivate() {
+        this.active = false;
+    }
+
+    public void activate() {
+        this.active = true;
+    }
+
     @Override
     public boolean isActive() {
-        return DateUtils.isAfter(DateUtils.getCurrentDateTime(), expiresAt);
+        return active;
     }
 
     public boolean isActive(String date) {
@@ -65,10 +76,12 @@ public class TemporaryAssignment extends  AbstractRoleAssignment{
     public void extend(String newExpirationDate){
         ValidationUtils.requireNonEmpty(newExpirationDate, "ExpiresAt");
 
-        if (isActive(newExpirationDate))
-            throw new IllegalArgumentException("New date must be after current date: " + this.expiresAt + " | " + newExpirationDate);
+        if (!isActive(newExpirationDate)) {
+            throw new IllegalArgumentException("New date must be after current date: " + this.expiresAt + " < " + newExpirationDate);
+        }
 
         this.expiresAt = newExpirationDate;
+        this.active = true;
     }
 
     public boolean isExpired(){

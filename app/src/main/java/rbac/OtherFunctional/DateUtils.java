@@ -21,72 +21,70 @@ public class DateUtils {
 
     public static boolean isBefore(String date1, String date2) {
         if (date1 == null || date2 == null || date1.isEmpty() || date2.isEmpty()) {
-            throw new IllegalArgumentException("Date not de null or empty");
+            throw new IllegalArgumentException("Date cannot be null or empty");
         }
 
-        String[] mass1 = date1.split(" ");
-        String[] mass2 = date2.split(" ");
+        String[] parts1 = date1.split(" ");
+        String[] parts2 = date2.split(" ");
 
-        String firstDate = mass1[0].trim();
-        String secondDate = mass2[0].trim();
+        String firstDate = parts1[0].trim();
+        String secondDate = parts2[0].trim();
 
-        if (firstDate.isEmpty() || secondDate.isEmpty()) {
-            throw new IllegalArgumentException("Date not de null or empty");
+        String[] dateParts1 = firstDate.split("-");
+        String[] dateParts2 = secondDate.split("-");
+
+        if (dateParts1.length < 3 || dateParts2.length < 3) {
+            throw new IllegalArgumentException("Date must be format: yyyy-MM-dd");
         }
 
-        String[] daysMassFirst = firstDate.split("-");
-        String[] daysMassSecond = secondDate.split("-");
-        if (daysMassFirst.length < 3 || daysMassSecond.length < 3) {
-            throw new IllegalArgumentException("First part date must be format: yyyy-MM-dd");
-        }
+        int year1 = Integer.parseInt(dateParts1[0]);
+        int month1 = Integer.parseInt(dateParts1[1]);
+        int day1 = Integer.parseInt(dateParts1[2]);
 
-        boolean flagDays = false;
-        int win = 0;
-        for (int i=0; i<3; i++) {
-            int firstNum = Integer.parseInt(daysMassFirst[i]);
-            int secondtNum = Integer.parseInt(daysMassSecond[i]);
-            if (firstNum > secondtNum) {
-                flagDays = true;
-                win = 1;
-            }
-            else if(firstNum < secondtNum) {
-                flagDays = true;
-                win = 2;
-            }
-        }
+        int year2 = Integer.parseInt(dateParts2[0]);
+        int month2 = Integer.parseInt(dateParts2[1]);
+        int day2 = Integer.parseInt(dateParts2[2]);
 
-        if (flagDays) {
-            return win == 1;
-        }
+        if (year1 < year2) return true;
+        if (year1 > year2) return false;
 
-        String firstDate2 = mass1[1].trim();
-        String secondDate2 = mass2[1].trim();
-        if (!firstDate2.isEmpty() || !secondDate2.isEmpty()) {
-            String[] timeMassFirst = firstDate2.split(":");
-            String[] timeMassSecond = secondDate2.split(":");
-            if (timeMassFirst.length < 3 || timeMassSecond.length < 3) {
-                return win == 1 || win == 0;
-            }
+        if (month1 < month2) return true;
+        if (month1 > month2) return false;
 
-            for (int i=0; i<3; i++) {
-                int firstNum = Integer.parseInt(timeMassFirst[i]);
-                int secondtNum = Integer.parseInt(timeMassSecond[i]);
-                if (firstNum > secondtNum) {
-                    win = 1;
-                    break;
-                }
-                else if(firstNum < secondtNum) {
-                    win = 2;
-                    break;
-                }
+        if (day1 < day2) return true;
+        if (day1 > day2) return false;
+
+        if (parts1.length > 1 && parts2.length > 1) {
+            String time1 = parts1[1].trim();
+            String time2 = parts2[1].trim();
+
+            if (!time1.isEmpty() && !time2.isEmpty()) {
+                String[] timeParts1 = time1.split(":");
+                String[] timeParts2 = time2.split(":");
+
+                int hour1 = Integer.parseInt(timeParts1[0]);
+                int minute1 = Integer.parseInt(timeParts1[1]);
+                int second1 = Integer.parseInt(timeParts1[2]);
+
+                int hour2 = Integer.parseInt(timeParts2[0]);
+                int minute2 = Integer.parseInt(timeParts2[1]);
+                int second2 = Integer.parseInt(timeParts2[2]);
+
+                if (hour1 < hour2) return true;
+                if (hour1 > hour2) return false;
+
+                if (minute1 < minute2) return true;
+                if (minute1 > minute2) return false;
+
+                return second1 < second2;
             }
         }
 
-        return win == 1 || win == 0;
+        return false;
     }
 
     public static boolean isAfter(String date1, String date2) {
-        return !isBefore(date1, date2);
+        return !isBefore(date1, date2) && !date1.equals(date2);
     }
 
     public static String addDays(String date, int days) {

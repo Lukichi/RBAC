@@ -551,7 +551,7 @@ public class CommandRegistry {
                     AssignmentMetadata metadata = AssignmentMetadata.now(nowUser, reason);
                     TemporaryAssignment temporaryAssignment = new TemporaryAssignment(user, role, metadata);
 
-                    if (!temporaryAssignment.isActive(date)){
+                    if (temporaryAssignment.isActive(date)){
                         temporaryAssignment.extend(date);
                         RBACSystem.getAssignmentManager().add(temporaryAssignment);
                         System.out.println("Роль назначена до даты: " + date);
@@ -1046,6 +1046,7 @@ public class CommandRegistry {
                 if (save){
                     parser.parseAndExecute("save", scanner, system);
                 }
+                system.shutdown();
                 exit(0);
             }
             else {

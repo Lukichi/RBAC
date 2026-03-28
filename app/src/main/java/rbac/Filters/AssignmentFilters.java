@@ -1,6 +1,7 @@
 package rbac.Filters;
 
 import rbac.Components.Role;
+import rbac.Components.TemporaryAssignment;
 import rbac.Components.User;
 
 import java.time.LocalDateTime;
@@ -56,15 +57,18 @@ public class AssignmentFilters {
 
     public static AssignmentFilter expiringBefore(String date) {
         return assignment -> {
-            String assignedAt = assignment.metadata().assignedAt();
+            if (!"TEMPORARY".equals(assignment.assignmentType())) {
+                return false;
+            }
+
+            TemporaryAssignment tempAssignment = (TemporaryAssignment) assignment;
+            String expiresAt = tempAssignment.getExpiresAt();
+
             DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
             LocalDateTime filterDate = LocalDateTime.parse(date, DATE_FORMAT);
-            LocalDateTime assignedDate = LocalDateTime.parse(assignedAt, DATE_FORMAT);
+            LocalDateTime expirationDate = LocalDateTime.parse(expiresAt, DATE_FORMAT);
 
-//            System.out.println("DATA TIME: " + assignedAt);
-//            System.out.println("    filter TIME: " + date);
-
-            return assignedDate.isBefore(filterDate) && assignment.assignmentType().equals("TEMPORARY");
+            return expirationDate.isBefore(filterDate);
         };
     }
 

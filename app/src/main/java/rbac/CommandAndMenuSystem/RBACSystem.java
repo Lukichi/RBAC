@@ -1,22 +1,23 @@
 package rbac.CommandAndMenuSystem;
 
 import rbac.Components.*;
+import rbac.Filters.AssignmentFilters;
 import rbac.LogSystem.ReportGenerator;
 import rbac.Managers.AssignmentManager;
 import rbac.Managers.RoleManager;
 import rbac.Managers.UserManager;
 import rbac.LogSystem.AuditLog;
+import rbac.OtherFunctional.DateUtils;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.regex.Pattern;
 
 public class RBACSystem {
@@ -30,6 +31,44 @@ public class RBACSystem {
     private static AuditLog logSystem = new AuditLog();
 
     private final ExecutorService executor = Executors.newCachedThreadPool();
+    private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+
+    public void startExpiredAssignmentsCleaner(long time) {
+        scheduler.scheduleAtFixedRate(() -> {
+            try {
+                List<RoleAssignment> expiredAssignments = assignmentManager.findByFilterParallel(AssignmentFilters.expiringBefore(DateUtils.getCurrentDateTime()));
+
+                if (expiredAssignments.isEmpty()) {
+                    logStatistics();
+                    return;
+                }
+
+                for (RoleAssignment assignment : expiredAssignments) {
+                    /*AbstractRoleAssignment value = (AbstractRoleAssignment) assignment;
+                    System.out.println(value.summary());*/
+                    assignmentManager.deactivateAssignment(assignment.assignmentId());
+                }
+
+                logSystem.log("SCHEDULER", "system", "assignments", "Deactivated " + expiredAssignments.size() + " temporary assignments");
+                logStatistics();
+
+            } catch (Exception e) {
+                logSystem.log("ERROR", "system", "scheduler", "Error in assignments cleaner: " + e.getMessage());
+            }
+        }, 0, time, TimeUnit.SECONDS);
+    }
+
+    private void logStatistics() {
+        int totalUsers = userManager.count();
+        int totalRoles = roleManager.count();
+        int totalAssignments = assignmentManager.count();
+        int activeAssignments = assignmentManager.getActiveAssignments().size();
+        int expiredAssignments = assignmentManager.getExpiredAssignments().size();
+
+        String stats = String.format( "STATISTICS: Users=%d, Roles=%d, Assignments=%d (Active=%d, InActive=%d)", totalUsers, totalRoles, totalAssignments, activeAssignments, expiredAssignments);
+
+        logSystem.log("STATISTIC", "system", "statistics", stats);
+    }
 
     public static UserManager getUserManager() {
         return userManager;
