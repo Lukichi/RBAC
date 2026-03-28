@@ -67,12 +67,18 @@ class AppTest {
         temp1.extend(LocalDateTime.now().plusHours(3).format(dataFormat));
         TemporaryAssignment temp2 = new TemporaryAssignment(users.get(3), roles.get(2), new AssignmentMetadata("admin-report", LocalDateTime.now().plusHours(1).format(dataFormat), "Important reason"));
         temp2.extend(LocalDateTime.now().plusHours(1).format(dataFormat));
+
+        TemporaryAssignment noActiveTempAssign = new TemporaryAssignment(users.get(1), roles.get(1), metData);
+        noActiveTempAssign.deactivate();
+        TemporaryAssignment noActiveTempAssign2 = new TemporaryAssignment(users.get(4), roles.get(3), metData2);
+        noActiveTempAssign2.deactivate();
+
         assignmentList = List.of(
                 new PermanentAssignment(users.get(0), roles.get(0), metData),   // admin
-                new TemporaryAssignment(users.get(1), roles.get(1), metData),   // admin-report
+                noActiveTempAssign,   // admin-report
                 temp1,   // user
                 temp2,  // user
-                new TemporaryAssignment(users.get(4), roles.get(3), metData2)  // guest
+                noActiveTempAssign2  // guest
         );
 
 //        System.out.println("\nДанные для теста" );
@@ -677,7 +683,7 @@ class AppTest {
         }
 
         @Test
-        void testAssigmentsManager() {
+        void testAssigmentsManager() throws InterruptedException {
             AssignmentManager assignmentManager = new AssignmentManager();
             assignmentManager.add(assignmentList.get(0));
             assignmentManager.add(assignmentList.get(1));
@@ -687,7 +693,16 @@ class AppTest {
 
             List<RoleAssignment> activeManager = assignmentManager.getActiveAssignments(); // сортируем по нику, иначе порядок рандомный
             List<RoleAssignment> activeResult = List.of(assignmentList.get(0), assignmentList.get(3), assignmentList.get(2));
-            assertEquals(activeResult.size(), activeManager.size(), "Размеры должны совпадать");
+//            assertEquals(activeResult.size(), activeManager.size(), "Размеры должны совпадать");
+            for(RoleAssignment value : activeManager) {
+                AbstractRoleAssignment help = (AbstractRoleAssignment) value;
+                System.out.println(help.summary());
+            }
+            System.out.println("===============");
+            for(RoleAssignment value : activeResult) {
+                AbstractRoleAssignment help = (AbstractRoleAssignment) value;
+                System.out.println(help.summary());
+            }
             assertEquals(activeResult, activeManager);
 
             // на примере temp1, должна быть правда
@@ -1122,31 +1137,31 @@ class AppTest {
         @Test
         void testBefore() {
             boolean res = DateUtils.isBefore("2026-01-02", "2026-01-01 11:11:11");
-            assertEquals(true, res);
+            assertEquals(false, res);
 
             res = DateUtils.isBefore("2026-01-02", "2026-01-03 11:11:11");
-            assertEquals(false, res);
-
-            res = DateUtils.isBefore("2026-01-01 12:11:11", "2026-01-01 11:11:11");
             assertEquals(true, res);
 
-            res = DateUtils.isBefore("2026-01-01 10:11:11", "2026-01-01 11:11:11");
+            res = DateUtils.isBefore("2026-01-01 12:11:11", "2026-01-01 11:11:11");
             assertEquals(false, res);
+
+            res = DateUtils.isBefore("2026-01-01 10:11:11", "2026-01-01 11:11:11");
+            assertEquals(true, res);
         }
 
         @Test
         void testAfter() {
             boolean res = DateUtils.isAfter("2026-01-02", "2026-01-01 11:11:11");
-            assertEquals(false, res);
+            assertEquals(true, res);
 
             res = DateUtils.isAfter("2026-01-02", "2026-01-03 11:11:11");
-            assertEquals(true, res);
-
-            res = DateUtils.isAfter("2026-01-01 12:11:11", "2026-01-01 11:11:11");
             assertEquals(false, res);
 
-            res = DateUtils.isAfter("2026-01-01 10:11:11", "2026-01-01 11:11:11");
+            res = DateUtils.isAfter("2026-01-01 12:11:11", "2026-01-01 11:11:11");
             assertEquals(true, res);
+
+            res = DateUtils.isAfter("2026-01-01 10:11:11", "2026-01-01 11:11:11");
+            assertEquals(false, res);
         }
 
         @Test
