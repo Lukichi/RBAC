@@ -3,6 +3,7 @@ package rbac;
 import rbac.CommandAndMenuSystem.CommandParser;
 import rbac.CommandAndMenuSystem.CommandRegistry;
 import rbac.CommandAndMenuSystem.RBACSystem;
+import rbac.OtherFunctional.DateUtils;
 import rbac.OtherFunctional.FormatUtils;
 
 import java.util.*;
@@ -130,6 +131,7 @@ public class Main {
         RBACSystem system = new RBACSystem();
         system.initialize();
         system.setCurrentUser("admin");
+        system.startExpiredAssignmentsCleaner(20);
         CommandParser parser = new CommandParser();
         CommandRegistry.registerCommands(parser);
 
@@ -140,6 +142,13 @@ public class Main {
 
             parser.parseAndExecute(command, scanner, system);
         }
+
+
+//        boolean res = DateUtils.isAfter("2026-11-11 11:11:11", "2026-03-28 16:00:00");
+//        System.out.println(res);
+//
+//        boolean res2 = DateUtils.isAfter("2026-03-29 16:00:00", "2026-03-28 16:00:00");
+//        System.out.println(res2);
 
     }
 }

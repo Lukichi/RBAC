@@ -188,6 +188,24 @@ public class AssignmentManager implements Repository<RoleAssignment> {
         });
     }
 
+    public void deactivateAssignment(String assignmentId) {
+        RoleAssignment assignment = assigmentsData.get(assignmentId);
+        if (!"TEMPORARY".equals(assignment.assignmentType())) {
+            return;
+        }
+
+        assigmentsData.compute(assignmentId, (id, value) -> {
+            if (value == null) {
+                throw new IllegalArgumentException("Assignment with id '" + id + "' not found");
+            }
+
+            TemporaryAssignment tempAssignment = (TemporaryAssignment) value;
+            tempAssignment.deactivate();
+
+            return tempAssignment;
+        });
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
