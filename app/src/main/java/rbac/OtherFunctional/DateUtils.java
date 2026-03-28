@@ -84,7 +84,7 @@ public class DateUtils {
     }
 
     public static boolean isAfter(String date1, String date2) {
-        return !isBefore(date1, date2);
+        return !isBefore(date1, date2) && !date1.equals(date2);
     }
 
     public static String addDays(String date, int days) {

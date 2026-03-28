@@ -143,12 +143,5 @@ public class Main {
             parser.parseAndExecute(command, scanner, system);
         }
 
-
-//        boolean res = DateUtils.isAfter("2026-11-11 11:11:11", "2026-03-28 16:00:00");
-//        System.out.println(res);
-//
-//        boolean res2 = DateUtils.isAfter("2026-03-29 16:00:00", "2026-03-28 16:00:00");
-//        System.out.println(res2);
-
     }
 }

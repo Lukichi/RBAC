@@ -1046,6 +1046,7 @@ public class CommandRegistry {
                 if (save){
                     parser.parseAndExecute("save", scanner, system);
                 }
+                system.shutdown();
                 exit(0);
             }
             else {
