@@ -1,14 +1,22 @@
 package rbac.CommandAndMenuSystem;
 
 import rbac.Components.*;
+import rbac.LogSystem.ReportGenerator;
 import rbac.Managers.AssignmentManager;
 import rbac.Managers.RoleManager;
 import rbac.Managers.UserManager;
 import rbac.LogSystem.AuditLog;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 public class RBACSystem {
@@ -21,18 +29,20 @@ public class RBACSystem {
     private static String currentUser;
     private static AuditLog logSystem = new AuditLog();
 
+    private final ExecutorService executor = Executors.newCachedThreadPool();
+
     public static UserManager getUserManager() {
         return userManager;
     }
-
     public static RoleManager getRoleManager() {
         return roleManager;
     }
-
     public static AuditLog getLogSystem(){return logSystem;}
-
     public static AssignmentManager getAssignmentManager() {
         return assignmentManager;
+    }
+    public String getCurrentUser() {
+        return currentUser;
     }
 
     public void setCurrentUser(String username){
@@ -48,10 +58,6 @@ public class RBACSystem {
             throw new IllegalArgumentException("User witch username *" + username + "* not found");
         }
         currentUser = username;
-    }
-
-    public String getCurrentUser() {
-        return currentUser;
     }
 
     public void initialize() {
@@ -96,4 +102,152 @@ public class RBACSystem {
 
         return "Count users: " + countUsers + "\nCount roles: " + countRoles +"\nCount assignments: " + countAssigments;
     }
+
+    public CompletableFuture<String> generateUserReportAsync() {
+        return CompletableFuture.supplyAsync(() -> {
+            return ReportGenerator.generateUserReport(userManager, assignmentManager);
+        }, executor);
+    }
+
+    public CompletableFuture<String> generateRoleReportAsync() {
+        return CompletableFuture.supplyAsync(() -> {
+            return ReportGenerator.generateRoleReport(roleManager, assignmentManager);
+        }, executor);
+    }
+
+    public CompletableFuture<String> generatePermissionMatrixAsync() {
+        return CompletableFuture.supplyAsync(() -> {
+            return ReportGenerator.generatePermissionMatrix(userManager, assignmentManager);
+        }, executor);
+    }
+
+    public CompletableFuture<Void> saveReportAsync(String report, String filename) {
+        return CompletableFuture.runAsync(() -> {
+            ReportGenerator.exportToFile(report, filename);
+        }, executor);
+    }
+
+    public CompletableFuture<Void> saveAllData(String filename) {
+        return CompletableFuture.runAsync(() -> {
+            String correctName = filename;
+            if (!correctName.endsWith(".json")) {
+                correctName += ".json";
+            }
+
+            try (FileWriter writer = new FileWriter(correctName)) {
+                writer.write("{\n");
+                List<User> userList = RBACSystem.getUserManager().findAll();
+                writer.write("  \"users\": [\n");
+                for (int i = 0; i < userList.size(); i++) {
+                    User user = userList.get(i);
+
+                    writer.write("    {\n");
+                    writer.write("      \"username\": \"" + user.username() + "\",\n");
+                    writer.write("      \"fullName\": \"" + user.fullName() + "\",\n");
+                    writer.write("      \"email\": \"" + user.email() + "\"\n");
+                    writer.write("    }");
+
+                    if (i < userList.size() - 1) {
+                        writer.write(",");
+                    }
+                    writer.write("\n");
+                }
+                writer.write("  ],\n");
+
+                writer.write("  \"roles\": [\n");
+                List<Role> roleList = RBACSystem.getRoleManager().findAll();
+                for (int i = 0; i < roleList.size(); i++) {
+                    Role role = roleList.get(i);
+
+                    writer.write("    {\n");
+                    writer.write("      \"name\": \"" + role.getName() + "\",\n");
+                    writer.write("      \"description\": \"" + role.getDescription() + "\",\n");
+                    writer.write("      \"permissions\": [\n");
+
+                    Set<Permission> permissions = role.getPermissions();
+                    int h = 0;
+                    for(Permission permission : permissions){
+                        writer.write("          {\n");
+                        writer.write("            \"name\": \"" + permission.name() + "\",\n");
+                        writer.write("            \"resource\": \"" + permission.resource() + "\",\n");
+                        writer.write("            \"description\": \"" + permission.description() + "\"\n");
+                        writer.write("          }");
+
+                        if (h < permissions.size() - 1) {
+                            writer.write(",");
+                        }
+                        h++;
+                        writer.write("\n");
+                    }
+
+                    writer.write("      ]\n");
+                    writer.write("    }");
+
+                    if (i < roleList.size() - 1) {
+                        writer.write(",");
+                    }
+                    writer.write("\n");
+                }
+                writer.write("  ],\n");
+
+                writer.write("  \"assignments\": [\n");
+                List<RoleAssignment> assignmentList = RBACSystem.getAssignmentManager().findAll();
+                for (int i = 0; i < assignmentList.size(); i++) {
+                    AbstractRoleAssignment role = (AbstractRoleAssignment) assignmentList.get(i);
+
+                    writer.write("    {\n");
+                    writer.write("      \"type\": \"" + role.assignmentType() + "\",\n");
+
+                    if (role.assignmentType() == "PERMANENT"){
+                        writer.write("      \"user\": \"" + role.user().username() + "\",\n");
+                        writer.write("      \"role\": \"" + role.role().getName() + "\",\n");
+                        writer.write("      \"metadata\": \n");
+                        writer.write("      {\n");
+                        writer.write("        \"assignedBy\": \"" + role.metadata().assignedAt() + "\",\n");
+                        writer.write("        \"reason\": \"" + role.metadata().reason() + "\"\n");
+                        writer.write("      }\n");
+                    }
+                    else {
+                        TemporaryAssignment temporaryAssignment = (TemporaryAssignment) assignmentList.get(i);
+                        writer.write("      \"user\": \"" + role.user().username() + "\",\n");
+                        writer.write("      \"role\": \"" + role.role().getName() + "\",\n");
+                        writer.write("      \"metadata\": \n");
+                        writer.write("      {\n");
+                        writer.write("        \"assignedBy\": \"" + role.metadata().assignedAt() + "\",\n");
+                        writer.write("        \"reason\": \"" + role.metadata().reason() + "\"\n");
+                        writer.write("      },\n");
+                        writer.write("      \"expiresAt\": \"" + temporaryAssignment.getExpiresAt() + "\",\n");
+                        String text = temporaryAssignment.getAutoRenew()? "true" : "false";
+                        writer.write("      \"autoRenew\": \"" + text + "\"\n");
+                    }
+
+                    writer.write("    }");
+                    if (i < assignmentList.size() - 1) {
+                        writer.write(",");
+                    }
+                    writer.write("\n");
+                }
+                writer.write("  ]\n");
+
+                writer.write("}\n");
+
+            } catch (IOException e) {
+                System.out.println("Ошибка сохранения: " + e.getMessage());
+            }
+        }, executor);
+    }
+
+    public void shutdown() {
+        executor.shutdown();
+        try {
+            if (!executor.awaitTermination(10, TimeUnit.SECONDS)) {
+                executor.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            executor.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
+    }
+
+
 }
