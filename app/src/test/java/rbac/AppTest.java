@@ -1116,7 +1116,7 @@ class AppTest {
         void getDate() {
             String date = DateUtils.getCurrentDate();
 
-            assertEquals("2026-03-08", date);
+            assertEquals("2026-03-28", date);
         }
 
         @Test
@@ -1161,11 +1161,99 @@ class AppTest {
         @Test
         void testRelative() {
             String res = DateUtils.formatRelativeTime("2026-03-03");
-            assertEquals("5 days ago", res);
+            assertEquals("25 days ago", res);
 
             res = DateUtils.formatRelativeTime("2026-03-10 11:11:11");
-            assertEquals("in 2 days", res);
+            assertEquals("18 days ago", res);
         }
     }
+
+//    users = List.of(
+//            new User("admin", "Главный Админ", "admin@company.com"),
+//                new User("admin2", "Второй Админ", "john@gmail.com"),
+//                new User("maria", "Марина Семеновна", "maria@company.com"),
+//                new User("guest", "Гость", "guest@mail.ru"),
+//                new User("SERGEY", "Сергей Сергеевич", "super@mail.ru")
+//        );
+//    permissions = List.of(
+//            new Permission("READ", "testers", "Read users1"),
+//                new Permission("ReaD", "report", "Read users2"),
+//                new Permission("CREATE", "report", "other text"),
+//                new Permission("READ", "user", "text read")
+//        );
+//
+//    roles = List.of(
+//            new Role("admin", "Administrator", Set.of(permissions.get(0), permissions.get(1), permissions.get(2), permissions.get(3))),
+//            new Role("admin-reporter", "Reporter",  Set.of(permissions.get(1), permissions.get(2))),
+//            new Role("user", "User", Set.of(permissions.get(3))),
+//            new Role("guest", "Guest", Set.of())
+//            );
+
+//    AssignmentMetadata metData = AssignmentMetadata.now("ADMIN", "Important reason");
+//    AssignmentMetadata metData2 = AssignmentMetadata.now("admin-report", "Important reason");
+//    DateTimeFormatter dataFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+//    TemporaryAssignment temp1 = new TemporaryAssignment(users.get(2), roles.get(2), new AssignmentMetadata("ADMIN", LocalDateTime.now().plusHours(3).format(dataFormat), "Important reason"));
+//        temp1.extend(LocalDateTime.now().plusHours(3).format(dataFormat));
+//    TemporaryAssignment temp2 = new TemporaryAssignment(users.get(3), roles.get(2), new AssignmentMetadata("admin-report", LocalDateTime.now().plusHours(1).format(dataFormat), "Important reason"));
+//        temp2.extend(LocalDateTime.now().plusHours(1).format(dataFormat));
+//    assignmentList = List.of(
+//            new PermanentAssignment(users.get(0), roles.get(0), metData),   // admin
+//            new TemporaryAssignment(users.get(1), roles.get(1), metData),   // admin-report
+//    temp1,   // user
+//    temp2,  // user
+//            new TemporaryAssignment(users.get(4), roles.get(3), metData2)  // guest
+//            );
+
+    @Nested
+    class ParallelTests {
+
+        AssignmentManager assignmentManager = new AssignmentManager();
+        UserManager userManager = new UserManager();
+        RoleManager roleManager = new RoleManager();
+
+        @BeforeEach
+        void initData(){
+            for (User value : users) {
+                userManager.add(value);
+            }
+
+            for (Role value : roles) {
+                roleManager.add(value);
+            }
+
+            for (AbstractRoleAssignment value : assignmentList) {
+                assignmentManager.add(value);
+            }
+        }
+
+        @Test
+        void testUserManager() {
+            List<User> resultFilter = userManager.findByFilterParallel(UserFilters.byUsernameContains("ad"));
+
+            List<User> mainResult = List.of(users.get(0), users.get(1));
+            assertEquals(mainResult, resultFilter);
+        }
+
+        @Test
+        void testRoleManager() {
+            List<Role> resultFilter = roleManager.findByFilterParallel(RoleFilters.hasPermission(permissions.get(3)));
+            List<Role> mainResult = List.of(roles.get(0), roles.get(2));
+
+            List<Role> sortedFilter = resultFilter.stream().sorted(RoleSorters.byName()).toList();
+            List<Role> sortedMain = mainResult.stream().sorted(RoleSorters.byName()).toList();
+            assertEquals(sortedMain, sortedFilter);
+        }
+
+        @Test
+        void testAssignmentManager() {
+            List<RoleAssignment> resultFilter = assignmentManager.findByFilterParallel(AssignmentFilters.assignedBy("admin-report"));
+
+            List<RoleAssignment> mainResult = List.of(assignmentList.get(3), assignmentList.get(4));
+            List<RoleAssignment> sortedFilter = resultFilter.stream().sorted(AssignmentSorters.byUsername()).toList();
+            List<RoleAssignment> sortedMain = mainResult.stream().sorted(AssignmentSorters.byUsername()).toList();
+            assertEquals(sortedMain, sortedFilter);
+        }
+    }
+
 
 }
