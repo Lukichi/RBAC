@@ -198,5 +198,7 @@
 
 - putIfAbsent - добавляет, если значения ещё нет (пока другой поток не добавил), если значение уже сть, по вернёт его
 - compute - в ConcurrentHashMap блокирует значение с которым работает
-- 
+- ExecutorService
+  - https://javarush.com/quests/lectures/jru.module2.lecture18
+  - https://habr.com/ru/articles/802113/
 

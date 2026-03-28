@@ -15,6 +15,7 @@ import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -1486,6 +1487,157 @@ public class CommandRegistry {
                 }
             }
         });
+
+        parser.registerCommand("report-users-async", "Запустить генерацию отчёта по пользователям в фоновом режиме", (scanner, system) -> {
+            int type = ConsoleUtils.promptInt(scanner, "Для вывода отчета на экран напишите 1, для сохранения в файл 0", 0, 1);
+
+            switch (type) {
+                case 1: {
+                    System.out.println("Начало генерации");
+
+                    CompletableFuture<String> future = system.generateUserReportAsync();
+                    future.thenAccept(report -> {
+                        out.println("\n\n" + FormatUtils.formatHeader("Сгенерированный отчёт по пользователям:"));
+                        out.println(FormatUtils.formatBox(report));
+                    }).exceptionally(throwable -> {
+                        System.err.println("\n\nОшибка генерации отчета: " + throwable.getMessage());
+                        return null;
+                    });
+
+                    break;
+                }
+                case 0: {
+                    String filename = ConsoleUtils.promptString(scanner, "Введите имя файла: ", true);
+                    System.out.println("Начало генерации");
+
+                    CompletableFuture<String> future = system.generateUserReportAsync();
+                    future.thenAccept(report -> {
+                        CompletableFuture<Void> future2 = system.saveReportAsync(report, filename);
+
+                        future2.thenRun(() -> {
+                            out.println("\nОтчёт сохранён в файл " + filename);
+                        }).exceptionally(throwable -> {
+                            err.println("Ошибка сохранения отчёта: " + throwable.getMessage());
+                            return null;
+                        });
+                    }).exceptionally(throwable -> {
+                        System.err.println("Ошибка генерации отчёта: " + throwable.getMessage());
+                        return null;
+                    });
+
+                    break;
+                }
+                default: {
+                    System.out.println("Неверный ввод.");
+                    break;
+                }
+            }
+        });
+
+        parser.registerCommand("report-roles-async", "Запустить генерацию отчёта по ролям в фоновом режиме", (scanner, system) -> {
+            int type = ConsoleUtils.promptInt(scanner, "Для вывода отчета на экран напишите 1, для сохранения в файл 0", 0, 1);
+
+            switch (type) {
+                case 1: {
+                    System.out.println("Начало генерации");
+
+                    CompletableFuture<String> future = system.generateRoleReportAsync();
+                    future.thenAccept(report -> {
+                        out.println("\n\n" + FormatUtils.formatHeader("Сгенерированный отчёт по ролям:"));
+                        out.println(FormatUtils.formatBox(report));
+                    }).exceptionally(throwable -> {
+                        System.err.println("\n\nОшибка генерации отчета: " + throwable.getMessage());
+                        return null;
+                    });
+
+                    break;
+                }
+                case 0: {
+                    String filename = ConsoleUtils.promptString(scanner, "Введите имя файла: ", true);
+                    System.out.println("Начало генерации");
+
+                    CompletableFuture<String> future = system.generateRoleReportAsync();
+                    future.thenAccept(report -> {
+                        CompletableFuture<Void> future2 = system.saveReportAsync(report, filename);
+
+                        future2.thenRun(() -> {
+                            out.println("\nОтчёт сохранён в файл " + filename);
+                        }).exceptionally(throwable -> {
+                            err.println("Ошибка сохранения отчёта: " + throwable.getMessage());
+                            return null;
+                        });
+                    }).exceptionally(throwable -> {
+                        System.err.println("Ошибка генерации отчёта: " + throwable.getMessage());
+                        return null;
+                    });
+
+                    break;
+                }
+                default: {
+                    System.out.println("Неверный ввод.");
+                    break;
+                }
+            }
+        });
+
+        parser.registerCommand("report-roles-async", "Запустить генерацию отчёта по правам в фоновом режиме", (scanner, system) -> {
+            int type = ConsoleUtils.promptInt(scanner, "Для вывода отчета на экран напишите 1, для сохранения в файл 0", 0, 1);
+
+            switch (type) {
+                case 1: {
+                    System.out.println("Начало генерации");
+
+                    CompletableFuture<String> future = system.generatePermissionMatrixAsync();
+                    future.thenAccept(report -> {
+                        out.println("\n\n" + FormatUtils.formatHeader("Сгенерированный отчёт по правам:"));
+                        out.println(FormatUtils.formatBox(report));
+                    }).exceptionally(throwable -> {
+                        System.err.println("\n\nОшибка генерации отчета: " + throwable.getMessage());
+                        return null;
+                    });
+
+                    break;
+                }
+                case 0: {
+                    String filename = ConsoleUtils.promptString(scanner, "Введите имя файла: ", true);
+                    System.out.println("Начало генерации");
+
+                    CompletableFuture<String> future = system.generatePermissionMatrixAsync();
+                    future.thenAccept(report -> {
+                        CompletableFuture<Void> future2 = system.saveReportAsync(report, filename);
+
+                        future2.thenRun(() -> {
+                            out.println("\nОтчёт сохранён в файл " + filename);
+                        }).exceptionally(throwable -> {
+                            err.println("Ошибка сохранения отчёта: " + throwable.getMessage());
+                            return null;
+                        });
+                    }).exceptionally(throwable -> {
+                        System.err.println("Ошибка генерации отчёта: " + throwable.getMessage());
+                        return null;
+                    });
+
+                    break;
+                }
+                default: {
+                    System.out.println("Неверный ввод.");
+                    break;
+                }
+            }
+        });
+
+        parser.registerCommand("save-async", "В фоне сохраняет данные в файл (JSON)", (scanner, system) -> {
+            String filename = ConsoleUtils.promptString(scanner, "Введите имя файла: ", true);
+
+            CompletableFuture<Void> future = system.saveAllData(filename);
+            future.thenRun(() -> {
+                out.println("\n" + FormatUtils.formatBox("Отчёт сохранён в файл " + filename));
+            }).exceptionally(throwable -> {
+                err.println("Ошибка сохранения отчёта: " + throwable.getMessage());
+                return null;
+            });
+        });
+
 
 
     }
