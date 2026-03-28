@@ -1,5 +1,7 @@
 package rbac.Managers;
 
+import rbac.Components.Role;
+import rbac.Filters.RoleFilter;
 import rbac.Filters.UserFilter;
 import rbac.Components.Repository;
 import rbac.Components.User;
@@ -74,6 +76,11 @@ public class UserManager implements Repository<User> {
     public List<User> findByFilter(UserFilter filter){
         List<User> helpList = new ArrayList<>(usersData.values());
         return helpList.stream().filter(filter::test).toList();
+    }
+
+    public List<User> findByFilterParallel(UserFilter filter) {
+        List<User> helpList = new ArrayList<>(usersData.values());
+        return helpList.parallelStream().filter(filter::test).toList();
     }
 
     public List<User> findAll(UserFilter filter, Comparator<User> sorter){
