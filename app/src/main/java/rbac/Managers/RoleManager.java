@@ -2,6 +2,7 @@ package rbac.Managers;
 
 import rbac.Components.Repository;
 import rbac.Components.RoleAssignment;
+import rbac.Filters.AssignmentFilter;
 import rbac.Filters.RoleFilter;
 import rbac.Components.Permission;
 import rbac.Components.Role;
@@ -92,6 +93,11 @@ public class RoleManager implements Repository<Role> {
     public List<Role> findByFilter(RoleFilter filter){
         List<Role> helpList = new ArrayList<>( rolesData.values());
         return helpList.stream().filter(filter::test).toList();
+    }
+
+    public List<Role> findByFilterParallel(RoleFilter filter) {
+        List<Role> helpList = new ArrayList<>(rolesData.values());
+        return helpList.parallelStream().filter(filter::test).toList();
     }
 
     public List<Role> findAll(RoleFilter filter, Comparator<Role> sorter){
