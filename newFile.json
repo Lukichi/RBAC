@@ -1,0 +1,108 @@
+{
+  "users": [
+    {
+      "username": "test",
+      "fullName": "test",
+      "email": "test@mail.ru"
+    },
+    {
+      "username": "admin",
+      "fullName": "Chief Admin",
+      "email": "admin@mail.ru"
+    }
+  ],
+  "roles": [
+    {
+      "name": "admin",
+      "description": "Chief admin",
+      "permissions": [
+          {
+            "name": "READ",
+            "resource": "users",
+            "description": "Read users"
+          },
+          {
+            "name": "DELETE",
+            "resource": "users",
+            "description": "Delete users"
+          },
+          {
+            "name": "DELETE",
+            "resource": "report",
+            "description": "Delete report"
+          },
+          {
+            "name": "READ",
+            "resource": "report",
+            "description": "Read report"
+          },
+          {
+            "name": "WRITE",
+            "resource": "report",
+            "description": "Write report"
+          }
+      ]
+    },
+    {
+      "name": "manager",
+      "description": "Manage reports",
+      "permissions": [
+          {
+            "name": "READ",
+            "resource": "report",
+            "description": "Read report"
+          },
+          {
+            "name": "WRITE",
+            "resource": "report",
+            "description": "Write report"
+          }
+      ]
+    },
+    {
+      "name": "viewer",
+      "description": "View users",
+      "permissions": [
+          {
+            "name": "READ",
+            "resource": "users",
+            "description": "Read users"
+          }
+      ]
+    }
+  ],
+  "assignments": [
+    {
+      "type": "PERMANENT",
+      "user": "admin",
+      "role": "admin",
+      "metadata": 
+      {
+        "assignedBy": "2026-03-09 11:45:49",
+        "reason": "Initial data"
+      }
+    },
+    {
+      "type": "PERMANENT",
+      "user": "test",
+      "role": "viewer",
+      "metadata": 
+      {
+        "assignedBy": "2026-03-09 11:45:58",
+        "reason": "test"
+      }
+    },
+    {
+      "type": "TEMPORARY",
+      "user": "test",
+      "role": "manager",
+      "metadata": 
+      {
+        "assignedBy": "2026-03-09 11:45:58",
+        "reason": "test2"
+      },
+      "expiresAt": "2222-11-11 11:11:11",
+      "autoRenew": "false"
+    }
+  ]
+}
