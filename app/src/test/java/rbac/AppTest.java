@@ -30,6 +30,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -105,20 +106,36 @@ class AppTest {
                     new User("admin", "Главный Админ", "admin@company.com"),
                     new User("admin2", "Второй Админ", "john@gmail.com")
             );
+            assertEquals(result, filterData, "Содержание в имени подстроки");
 
-            System.out.println("Требуемый результат");
-            for(User value : result){
-                System.out.println(value);
-            }
-            System.out.println("\nДанные после фильтрации");
-            for(User value : filterData){
-                System.out.println(value);
-            }
+//            System.out.println("Требуемый результат");
+//            for(User value : result){
+//                System.out.println(value);
+//            }
+//            System.out.println("\nДанные после фильтрации");
+//            for(User value : filterData){
+//                System.out.println(value);
+//            }
 
-            assertEquals(result.size(), filterData.size(), "Размеры должны совпадать");
-            assertEquals(result, filterData, "Элементы должны совпадать");
+            filter = UserFilters.byUsername("SERGEY");
+            filterData = users.stream().filter(filter::test).toList();
+            result = List.of(users.get(4));
+            assertEquals(result, filterData, "Совпадение имени");
 
-            System.out.println("Тест прошёл");
+            filter = UserFilters.byEmail("guest@mail.ru");
+            filterData = users.stream().filter(filter::test).toList();
+            result = List.of(users.get(3));
+            assertEquals(result, filterData, "Совпадение почты");
+
+            filter = UserFilters.byEmailDomain("@company.com");
+            filterData = users.stream().filter(filter::test).toList();
+            result = List.of(users.get(0), users.get(2));
+            assertEquals(result, filterData, "Совпадение домена поты");
+
+            filter = UserFilters.byFullNameContains("Админ");
+            filterData = users.stream().filter(filter::test).toList();
+            result = List.of(users.get(0), users.get(1));
+            assertEquals(result, filterData, "Наличие подстроки в имени");
         }
 
         @Test
@@ -179,63 +196,37 @@ class AppTest {
 
             RoleFilter filter = RoleFilters.byName("ADMIN");
             List<Role> filterResult = roles.stream().filter(filter::test).toList();
-
             List<Role> result = List.of(roles.get(0));
+            assertEquals(result, filterResult, "Совпадение имени");
 
-            System.out.println("Требуемый результат фильтрации по названию роли");
-            for(Role value : result){
-                System.out.println(value);
-            }
-            System.out.println("\nДанные после фильтрации");
-            for(Role value : filterResult){
-                System.out.println(value);
-            }
+//            System.out.println("Требуемый результат фильтрации по названию роли");
+//            for(Role value : result){
+//                System.out.println(value);
+//            }
+//            System.out.println("\nДанные после фильтрации");
+//            for(Role value : filterResult){
+//                System.out.println(value);
+//            }
 
-            assertEquals(result.size(), filterResult.size(), "Количество записей должно совпадать");
-            assertEquals(result, filterResult, "Записи должны совпадать");
-            System.out.println("Тест фильтрации по названию прошёл");
-        }
+            filter = RoleFilters.byNameContains("ADMIN");
+            filterResult = roles.stream().filter(filter::test).toList();
+            result = List.of(roles.get(0), roles.get(1));
+            assertEquals(result, filterResult, "Содержание подстроки в имени");
 
-        @Test
-        void testRoleFilterMoreResults(){
-            RoleFilter filter = RoleFilters.byNameContains("ADMIN");
-            List<Role> filterResult = roles.stream().filter(filter::test).toList();
+            filter = RoleFilters.hasPermission(permissions.get(3));
+            filterResult = roles.stream().filter(filter::test).toList();
+            result = List.of(roles.get(0), roles.get(2));
+            assertEquals(result, filterResult, "Наличия права доступа по элементу");
 
-            List<Role> result = List.of(roles.get(0), roles.get(1));
+            filter = RoleFilters.hasPermission(permissions.get(3).name(), permissions.get(3).resource());
+            filterResult = roles.stream().filter(filter::test).toList();
+            result = List.of(roles.get(0), roles.get(2));
+            assertEquals(result, filterResult, "Наличия права доступа по названию и ресурсу");
 
-            System.out.println("Требуемый результат фильтрации по содержанию подстроки в названии роли");
-            for(Role value : result){
-                System.out.println(value);
-            }
-            System.out.println("\nДанные после фильтрации");
-            for(Role value : filterResult){
-                System.out.println(value);
-            }
-
-            assertEquals(result.size(), filterResult.size(), "Количество записей должно совпадать");
-            assertEquals(result, filterResult, "Записи должны совпадать");
-            System.out.println("Тест фильтрации по содержанию подстроки в названии роли пройден");
-        }
-
-        @Test
-        void testRoleFilterPermission(){
-            RoleFilter filter = RoleFilters.hasPermission(permissions.get(3));
-            List<Role> filterResult = roles.stream().filter(filter::test).toList();
-
-            List<Role> result = List.of(roles.get(0), roles.get(2));
-
-            System.out.println("Требуемый результат фильтрации по правам доступа");
-            for(Role value : result){
-                System.out.println(value);
-            }
-            System.out.println("\nДанные после фильтрации");
-            for(Role value : filterResult){
-                System.out.println(value);
-            }
-
-            assertEquals(result.size(), filterResult.size(), "Количество записей должно совпадать");
-            assertEquals(result, filterResult, "Записи должны совпадать");
-            System.out.println("Тест фильтрации по правам доступа пройден");
+            filter = RoleFilters.hasAtLeastNPermissions(1);
+            filterResult = roles.stream().filter(filter::test).toList();
+            result = List.of(roles.get(0), roles.get(1), roles.get(2));
+            assertEquals(result, filterResult, "Наличие минимального числа прав");
         }
 
         @Test
@@ -294,19 +285,13 @@ class AppTest {
 
             List<AbstractRoleAssignment> resultFilter = assignmentList.stream().filter(filter::test).toList();
             List<AbstractRoleAssignment> result = List.of(assignmentList.get(0), assignmentList.get(1));
+            assertEquals(result, resultFilter, "Назначен конкретному пользователю по элементу");
 
-            System.out.println("Требуемый результат фильтрации назначенных имён" );
-            for(AbstractRoleAssignment value : result){
-                System.out.println(value.summary());
-            }
-            System.out.println("\nДанные после фильтрации");
-            for(AbstractRoleAssignment value : resultFilter){
-                System.out.println(value.summary());
-            }
+            filter =AssignmentFilters.byUsername(users.get(0).username());
+            resultFilter = assignmentList.stream().filter(filter::test).toList();
+            result = List.of(assignmentList.get(0));
+            assertEquals(result, resultFilter, "Назначен конкретному пользователю по имени");
 
-            assertEquals(result.size(), resultFilter.size(), "Количество записей должно совпадать");
-            assertEquals(result, resultFilter, "Записи должны совпадать");
-            System.out.println("Тест фильтрации назначенных имён пройден");
         }
 
         @Test
@@ -317,19 +302,7 @@ class AppTest {
 
             List<AbstractRoleAssignment> resultFilter = assignmentList.stream().filter(filter::test).toList();
             List<AbstractRoleAssignment> result = List.of(assignmentList.get(0), assignmentList.get(2), assignmentList.get(3));
-
-            System.out.println("Требуемый результат фильтрации назначенных ролей" );
-            for(AbstractRoleAssignment value : result){
-                System.out.println(value.summary());
-            }
-            System.out.println("\nДанные после фильтрации");
-            for(AbstractRoleAssignment value : resultFilter){
-                System.out.println(value.summary());
-            }
-
-            assertEquals(result.size(), resultFilter.size(), "Количество записей должно совпадать");
-            assertEquals(result, resultFilter, "Записи должны совпадать");
-            System.out.println("Тест фильтрации назначенных ролей пройден");
+            assertEquals(result, resultFilter, "Назначена конкретная роль");
         }
 
         @Test
@@ -339,32 +312,11 @@ class AppTest {
 
             List<AbstractRoleAssignment> resultFilter = assignmentList.stream().filter(filter1::test).toList();
             List<AbstractRoleAssignment> result = List.of(assignmentList.get(0), assignmentList.get(2), assignmentList.get(3));
+            assertEquals(result, resultFilter, "Активные роли");
 
             List<AbstractRoleAssignment> resultFilter2 = assignmentList.stream().filter(filter2::test).toList();
             List<AbstractRoleAssignment> result2 = List.of(assignmentList.get(1), assignmentList.get(4));
-
-            System.out.println("\nТребуемый результат фильтрации назначенной активности (активны)" );
-            for(AbstractRoleAssignment value : result){
-                System.out.println(value.summary());
-            }
-            System.out.println("\nДанные после фильтрации (активны)");
-            for(AbstractRoleAssignment value : resultFilter){
-                System.out.println(value.summary());
-            }
-            assertEquals(result.size(), resultFilter.size(), "Количество записей должно совпадать");
-            assertEquals(result, resultFilter, "Записи должны совпадать");
-
-            System.out.println("\nТребуемый результат фильтрации назначенной активности (не активны)" );
-            for(AbstractRoleAssignment value : result2){
-                System.out.println(value.summary());
-            }
-            System.out.println("\nДанные после фильтрации (не активны)");
-            for(AbstractRoleAssignment value : resultFilter2){
-                System.out.println(value.summary());
-            }
-            assertEquals(result.size(), resultFilter.size(), "Количество записей должно совпадать");
-            assertEquals(result, resultFilter, "Записи должны совпадать");
-            System.out.println("Тест фильтрации назначенной активности пройден");
+            assertEquals(result2, resultFilter2, "Не активные роли");
         }
 
         @Test
@@ -374,33 +326,11 @@ class AppTest {
 
             List<AbstractRoleAssignment> resultFilter = assignmentList.stream().filter(filter1::test).toList();
             List<AbstractRoleAssignment> result = List.of(assignmentList.get(0));
+            assertEquals(result, resultFilter, "Тип назначения PERMANENT");
 
             List<AbstractRoleAssignment> resultFilter2 = assignmentList.stream().filter(filter2::test).toList();
             List<AbstractRoleAssignment> result2 = List.of(assignmentList.get(1),assignmentList.get(2), assignmentList.get(3), assignmentList.get(4));
-
-            System.out.println("\nТребуемый результат фильтрации назначенного типа (PERMANENT)" );
-            for(AbstractRoleAssignment value : result){
-                System.out.println(value.summary());
-            }
-            System.out.println("\nДанные после фильтрации (PERMANENT)");
-            for(AbstractRoleAssignment value : resultFilter){
-                System.out.println(value.summary());
-            }
-            assertEquals(result.size(), resultFilter.size(), "Количество записей должно совпадать");
-            assertEquals(result, resultFilter, "Записи должны совпадать");
-
-            System.out.println("\nТребуемый результат фильтрации назначенного типа (TEMPORARY)" );
-            for(AbstractRoleAssignment value : result2){
-                System.out.println(value.summary());
-            }
-            System.out.println("\nДанные после фильтрации (TEMPORARY)");
-            for(AbstractRoleAssignment value : resultFilter2){
-                System.out.println(value.summary());
-            }
-            assertEquals(result.size(), resultFilter.size(), "Количество записей должно совпадать");
-            assertEquals(result, resultFilter, "Записи должны совпадать");
-
-            System.out.println("Тест фильтрации назначенного типа пройден");
+            assertEquals(result2, resultFilter2, "Тип назначения TEMPORARY");
         }
 
         @Test
@@ -409,19 +339,7 @@ class AppTest {
 
             List<AbstractRoleAssignment> resultFilter = assignmentList.stream().filter(filter::test).toList();
             List<AbstractRoleAssignment> result = List.of(assignmentList.get(3), assignmentList.get(4));
-
-            System.out.println("\nТребуемый результат фильтрации автора назначения" );
-            for(AbstractRoleAssignment value : result){
-                System.out.println(value.summary());
-            }
-            System.out.println("\nДанные после фильтрации");
-            for(AbstractRoleAssignment value : resultFilter){
-                System.out.println(value.summary());
-            }
-            assertEquals(result.size(), resultFilter.size(), "Количество записей должно совпадать");
-            assertEquals(result, resultFilter, "Записи должны совпадать");
-
-            System.out.println("Тест фильтрации автора назначения пройден");
+            assertEquals(result, resultFilter, "Назначил пользователь");
         }
 
         @Test
@@ -431,19 +349,7 @@ class AppTest {
 
             List<AbstractRoleAssignment> resultFilter = assignmentList.stream().filter(filter::test).toList();
             List<AbstractRoleAssignment> result = List.of(assignmentList.get(2));
-
-            System.out.println("\nТребуемый результат фильтрации по времени назначения (после даты)" );
-            for(AbstractRoleAssignment value : result){
-                System.out.println(value.summary());
-            }
-            System.out.println("\nДанные после фильтрации");
-            for(AbstractRoleAssignment value : resultFilter){
-                System.out.println(value.summary());
-            }
-            assertEquals(result.size(), resultFilter.size(), "Количество записей должно совпадать");
-            assertEquals(result, resultFilter, "Записи должны совпадать");
-
-            System.out.println("Тест фильтрации по времени назначения пройден");
+            assertEquals(result, resultFilter, "Назначена после даты");
         }
 
         @Test
@@ -453,19 +359,7 @@ class AppTest {
 
             List<AbstractRoleAssignment> resultFilter = assignmentList.stream().filter(filter::test).toList();
             List<AbstractRoleAssignment> result = List.of(assignmentList.get(1), assignmentList.get(3), assignmentList.get(4));
-
-            System.out.println("\nТребуемый результат фильтрации по времени назначения (до даты)" );
-            for(AbstractRoleAssignment value : result){
-                System.out.println(value.summary());
-            }
-            System.out.println("\nДанные после фильтрации");
-            for(AbstractRoleAssignment value : resultFilter){
-                System.out.println(value.summary());
-            }
-            assertEquals(result.size(), resultFilter.size(), "Количество записей должно совпадать");
-            assertEquals(result, resultFilter, "Записи должны совпадать");
-
-            System.out.println("Тест фильтрации по времени назначения пройден");
+            assertEquals(result, resultFilter, "Временные назначения, истекающие до даты");
         }
     }
 
