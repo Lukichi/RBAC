@@ -543,20 +543,18 @@ class AppTest {
                     new User("maria", "Марина Семеновна", "maria@company.com"),
                     new User("SERGEY", "Сергей Сергеевич", "super-sergey@mail.ru")
             );
-            List<User> resultUpdateManager = usersManager.findAll(null, UserSorters.byFullName());
 
             UserManager userManager2 = new UserManager();
             for (User value : resultUpdateData)
                 userManager2.add(value);
             assertEquals(true, usersManager.equals(userManager2));
 
-            usersManager.remove(resultUpdateData.get(0));
-            assertEquals(resultUpdateData, resultUpdateManager);
+            userManager2.remove(new User("null", "null null", "null@mail.ru"));
+            List<User> resultUpdateManager = userManager2.findAll(null, UserSorters.byFullName());
+            assertEquals(resultUpdateData, resultUpdateManager, "Удаление несуществующего пользователя");
 
             usersManager.remove(resultUpdateData.get(0));
-            assertEquals(4, usersManager.count(), "Размеры должны совпадать");
-
-
+            assertEquals(4, usersManager.count(), "Удаление существующего пользователя");
         }
 
         @Test
@@ -572,7 +570,8 @@ class AppTest {
             Optional<Role> resultFindOneManager = roleManager.findByName("guest");
             assertEquals(resultFindOne, resultFindOneManager);
 
-            List<Role> roleList = roleManager.findRolesWithPermission("read", "REport");  // порядок обратный (обратный по отношению к добавлению ролей)
+            // порядок обратный (обратный по отношению к добавлению ролей)
+            List<Role> roleList = roleManager.findRolesWithPermission("read", "REport");
             List<Role> result = List.of(roles.get(0), roles.get(1));
 
             for (Role value : result)
@@ -591,25 +590,23 @@ class AppTest {
             assignmentManager.add(assignmentList.get(3));
             assignmentManager.add(assignmentList.get(4));
 
-            List<RoleAssignment> activeManager = assignmentManager.getActiveAssignments(); // сортируем по нику, иначе порядок рандомный
+            List<RoleAssignment> activeManager = assignmentManager.getActiveAssignments();
             List<RoleAssignment> activeResult = List.of(assignmentList.get(0), assignmentList.get(3), assignmentList.get(2));
-//            assertEquals(activeResult.size(), activeManager.size(), "Размеры должны совпадать");
-            for(RoleAssignment value : activeManager) {
-                AbstractRoleAssignment help = (AbstractRoleAssignment) value;
-                System.out.println(help.summary());
-            }
-            System.out.println("===============");
-            for(RoleAssignment value : activeResult) {
-                AbstractRoleAssignment help = (AbstractRoleAssignment) value;
-                System.out.println(help.summary());
-            }
+
+//            for(RoleAssignment value : activeManager) {
+//                AbstractRoleAssignment help = (AbstractRoleAssignment) value;
+//                System.out.println(help.summary());
+//            }
+//            System.out.println("===============");
+//            for(RoleAssignment value : activeResult) {
+//                AbstractRoleAssignment help = (AbstractRoleAssignment) value;
+//                System.out.println(help.summary());
+//            }
             assertEquals(activeResult, activeManager);
 
-            // на примере temp1, должна быть правда
             boolean hasRoleManager = assignmentManager.userHasRole(users.get(2), roles.get(2));
             assertEquals(true, hasRoleManager);
 
-            // на примере temp1, должна быть правда
             boolean hasPermissoinsManager = assignmentManager.userHasPermission(users.get(2), permissions.get(3).name(), permissions.get(3).resource());
             assertEquals(true, hasPermissoinsManager);
 
