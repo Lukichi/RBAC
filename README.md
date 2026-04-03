@@ -201,4 +201,5 @@
 - ExecutorService
   - https://javarush.com/quests/lectures/jru.module2.lecture18
   - https://habr.com/ru/articles/802113/
+- ScheduledExecutorService - то же самое, что и ExecutorService, но способен повторяться
 
