@@ -42,3 +42,19 @@ application {
     // Define the main class for the application.
     mainClass = 'org.example.App'
 }
+
+tasks.named('test') {
+    useJUnitPlatform {
+        excludeTags 'load'
+    }
+}
+
+tasks.register('loadTest', Test) {
+    useJUnitPlatform {
+        includeTags 'load'
+    }
+}
+
+tasks.named('build') {
+    dependsOn test
+}
