@@ -2,6 +2,7 @@ package rbac;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import rbac.CommandAndMenuSystem.RBACSystem;
 import rbac.Components.*;
@@ -16,6 +17,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@Tag("load")
 public class LoadTest {
 
     RBACSystem system;

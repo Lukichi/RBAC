@@ -1,10 +1,7 @@
 package rbac;
 
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import rbac.CommandAndMenuSystem.RBACSystem;
 import rbac.Components.*;
@@ -37,7 +34,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-
+@Tag("unit")
 class AppTest {
     private List<User> users;
     private List<Permission> permissions;
