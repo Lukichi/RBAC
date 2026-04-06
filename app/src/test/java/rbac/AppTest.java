@@ -687,10 +687,12 @@ class AppTest {
         AuditLog logs = new AuditLog();
 
         @BeforeEach
-        void initLog() {
+        void initLog() throws InterruptedException {
             logs.log("Create", "admin", "user", "Create test user");
             logs.log("Create", "admin-reporter", "REPORT", "");
             logs.log("UPDATE", "admin", "user", null);
+
+            Thread.sleep(1000);
         }
 
         @Test
