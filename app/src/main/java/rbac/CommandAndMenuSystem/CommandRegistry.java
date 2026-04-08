@@ -1428,13 +1428,13 @@ public class CommandRegistry {
 
             switch (type) {
                 case 1: {
-                    String text = ReportGenerator.generateUserReport(RBACSystem.getUserManager(), RBACSystem.getAssignmentManager());
+                    String text = ReportGenerator.generateUserReportParallel(RBACSystem.getUserManager(), RBACSystem.getAssignmentManager());
                     System.out.println(text);
                     break;
                 }
                 case 0: {
                     String filename = ConsoleUtils.promptString(scanner, "Введите имя файла: ", true);
-                    String text = ReportGenerator.generateUserReport(RBACSystem.getUserManager(), RBACSystem.getAssignmentManager());
+                    String text = ReportGenerator.generateUserReportParallel(RBACSystem.getUserManager(), RBACSystem.getAssignmentManager());
                     ReportGenerator.exportToFile(text, filename);
                     break;
                 }
@@ -1450,13 +1450,13 @@ public class CommandRegistry {
 
             switch (type) {
                 case 1: {
-                    String text = ReportGenerator.generateRoleReport(RBACSystem.getRoleManager(), RBACSystem.getAssignmentManager());
+                    String text = ReportGenerator.generateRoleReportParallel(RBACSystem.getRoleManager(), RBACSystem.getAssignmentManager());
                     System.out.println(text);
                     break;
                 }
                 case 0: {
                     String filename = ConsoleUtils.promptString(scanner, "Введите имя файла: ", true);
-                    String text = ReportGenerator.generateRoleReport(RBACSystem.getRoleManager(), RBACSystem.getAssignmentManager());
+                    String text = ReportGenerator.generateRoleReportParallel(RBACSystem.getRoleManager(), RBACSystem.getAssignmentManager());
                     ReportGenerator.exportToFile(text, filename);
                     break;
                 }
@@ -1472,13 +1472,13 @@ public class CommandRegistry {
 
             switch (type) {
                 case 1: {
-                    String text = ReportGenerator.generatePermissionMatrix(RBACSystem.getUserManager(), RBACSystem.getAssignmentManager());
+                    String text = ReportGenerator.generatePermissionMatrixParallel(RBACSystem.getUserManager(), RBACSystem.getAssignmentManager());
                     System.out.println(text);
                     break;
                 }
                 case 0: {
                     String filename = ConsoleUtils.promptString(scanner, "Введите имя файла: ", true);
-                    String text = ReportGenerator.generatePermissionMatrix(RBACSystem.getUserManager(), RBACSystem.getAssignmentManager());
+                    String text = ReportGenerator.generatePermissionMatrixParallel(RBACSystem.getUserManager(), RBACSystem.getAssignmentManager());
                     ReportGenerator.exportToFile(text, filename);
                     break;
                 }
