@@ -1,9 +1,6 @@
 package rbac.Managers;
 
-import rbac.Components.Role;
-import rbac.Filters.RoleFilter;
 import rbac.Filters.UserFilter;
-import rbac.Components.Repository;
 import rbac.Components.User;
 import rbac.SystemValidation.ValidationUtils;
 
@@ -25,9 +22,14 @@ public class UserManager implements Repository<User> {
 
         String key = item.username();
 
+        if (exists(key)) {
+            System.out.println("User witch user name " + key + " already create.");
+            return;
+        }
+
         User previous = usersData.putIfAbsent(key, item);
         if (previous != null) {
-            throw new IllegalArgumentException("User with username '" + key + "' already registered");
+            System.out.println("User with username '" + key + "' already registered");
         }
     }
 

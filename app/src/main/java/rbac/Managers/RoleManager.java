@@ -1,8 +1,5 @@
 package rbac.Managers;
 
-import rbac.Components.Repository;
-import rbac.Components.RoleAssignment;
-import rbac.Filters.AssignmentFilter;
 import rbac.Filters.RoleFilter;
 import rbac.Components.Permission;
 import rbac.Components.Role;
@@ -28,19 +25,19 @@ public class RoleManager implements Repository<Role> {
 
         String key = item.getId();
         if (rolesData.containsKey(key)) {
-            throw new IllegalArgumentException("Role with name '" + key + "' already create");
+            System.out.println("Role with name '" + item.getName() + "' already create");
         }
 
         Role previous = rolesData.putIfAbsent(key, item);
         if (previous != null) {
-            throw new IllegalArgumentException("Role with name '" + key + "' already create");
+            System.out.println("Role with name '" + item.getName() + "' already create");
         }
 
 
         Role previous2 = rolesDataName.putIfAbsent(item.getName(), item);
         if (previous2 != null) {
             rolesData.remove(key);
-            throw new IllegalArgumentException("Role with name '" + key + "' already create");
+            System.out.println("Role with name '" + item.getName() + "' already create");
         }
     }
 
