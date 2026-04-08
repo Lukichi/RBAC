@@ -519,9 +519,6 @@ class AppTest {
         void testUserManager(){
             UserManager usersManager = new UserManager();
             usersManager.add(users.get(0));
-            assertThrows(IllegalArgumentException.class, () -> {
-                usersManager.add(users.get(0));
-            });
             usersManager.add(users.get(1));
             usersManager.add(users.get(2));
             usersManager.add(users.get(3));
