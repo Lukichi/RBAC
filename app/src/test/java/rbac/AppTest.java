@@ -3,6 +3,8 @@ package rbac;
 
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
+import rbac.CommandAndMenuSystem.CommandParser;
+import rbac.CommandAndMenuSystem.CommandRegistry;
 import rbac.CommandAndMenuSystem.RBACSystem;
 import rbac.Components.*;
 import rbac.Filters.*;
@@ -19,6 +21,8 @@ import rbac.LogSystem.AuditEntry;
 import rbac.LogSystem.AuditLog;
 import rbac.SystemValidation.ValidationUtils;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -616,23 +620,134 @@ class AppTest {
 
     @Nested
     class testCommandAndSystem{
-        @Test
-        void testSystem() {
-            RBACSystem system = new RBACSystem();
+
+        static  RBACSystem system;
+        static  CommandParser parser;
+
+        @BeforeAll
+        static void initData() {
+            system = new RBACSystem();
             system.initialize();
             system.setCurrentUser("admin");
-            String nameUser = system.getCurrentUser();
-            assertEquals("admin", nameUser);
-
-            assertThrows(IllegalArgumentException.class, () -> {
-                system.setCurrentUser("admin2@1");
-            });
-
-            System.out.println(RBACSystem.generateStatistics());
-
-            String resultStatictic = "Count users: " + 1 + "\nCount roles: " + 1 +"\nCount assignments: " + 1;
-            assertEquals(resultStatictic, RBACSystem.generateStatistics());
+            system.startExpiredAssignmentsCleaner(20);
+            parser = new CommandParser();
+            CommandRegistry.registerCommands(parser);
         }
+
+        @Test
+        void testUserCommands() {
+            InputStream originalIn = System.in;
+
+            try {
+                String simulatedInput = "testuser\nTest User\ntest@example.com\n" +
+                        "testuser\nNew Name\nnewTest@example.com\n" +
+                        "testuser\nyes\n";
+                ByteArrayInputStream testIn = new ByteArrayInputStream(simulatedInput.getBytes());
+                System.setIn(testIn);
+                Scanner scanner = new Scanner(System.in);
+
+                parser.parseAndExecute("user-create", scanner, system);
+                User user = system.getUserManager().findByUsername("testuser").orElse(null);
+                assertNotNull(user);
+                assertEquals("Test User", user.fullName());
+
+                parser.parseAndExecute("user-update", scanner, system);
+                user = system.getUserManager().findByUsername("testuser").orElse(null);
+                assertEquals("newTest@example.com", user.email());
+
+                parser.parseAndExecute("user-delete", scanner, system);
+                user = system.getUserManager().findByUsername("testuser").orElse(null);
+                assertNull(user);
+
+            } finally {
+                System.setIn(originalIn);
+            }
+        }
+
+        @Test
+        void testRoleCommands() {
+            InputStream originalIn = System.in;
+
+            try {
+                String simulatedInput = "TestRole\nOther information\n" +
+                        "TestRole\n\nNew information\n" +
+                        "TestRole\nread\nuser\nAdd new permission\n" +
+                        "TestRole\nread\nuser\nAdd new permission\n" +
+                        "TestRole\ncreate\nuser\nAdd one more permission\n" +
+                        "TestRole\n2\n" +
+                        "TestRole\nyes\n";
+                ByteArrayInputStream testIn = new ByteArrayInputStream(simulatedInput.getBytes());
+                System.setIn(testIn);
+                Scanner scanner = new Scanner(System.in);
+
+                parser.parseAndExecute("role-create", scanner, system);
+                Role role = system.getRoleManager().findByName("TestRole").orElse(null);
+                assertEquals("TestRole", role.getName());
+
+                parser.parseAndExecute("role-update", scanner, system);
+                role = system.getRoleManager().findByName("TestRole").orElse(null);
+                assertEquals("New information", role.getDescription());
+
+                parser.parseAndExecute("role-add-permission", scanner, system);
+                parser.parseAndExecute("role-add-permission", scanner, system);
+                parser.parseAndExecute("role-add-permission", scanner, system);
+                role = system.getRoleManager().findByName("TestRole").orElse(null);
+                assertEquals(2, role.getPermissions().stream().count());
+
+                parser.parseAndExecute("role-remove-permission", scanner, system);
+                role = system.getRoleManager().findByName("TestRole").orElse(null);
+                assertEquals(1, role.getPermissions().stream().count());
+
+                parser.parseAndExecute("role-delete", scanner, system);
+                role = system.getRoleManager().findByName("TestRole").orElse(null);
+                assertNull(role);
+
+            } finally {
+                System.setIn(originalIn);
+            }
+        }
+
+        @Test
+        void testAssigments() {
+            InputStream originalIn = System.in;
+
+            try {
+                DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                String nowDate =  LocalDateTime.now().plusSeconds(2).format(format);
+                String newDate =  LocalDateTime.now().plusMonths(2).format(format);
+
+                String simulatedInput = "testuser\nTest User\ntest@example.com\n" +
+                        "testuser\n1\n2\n\n" + nowDate + "\n" +
+                        "testuser\nadmin\n1\n" + newDate + "\n" +
+                        "testuser\n1\n";
+                ByteArrayInputStream testIn = new ByteArrayInputStream(simulatedInput.getBytes());
+                System.setIn(testIn);
+                Scanner scanner = new Scanner(System.in);
+
+                parser.parseAndExecute("user-create", scanner, system);
+
+                parser.parseAndExecute("assign-role", scanner, system);
+                User user = system.getUserManager().findByUsername("testuser").orElse(null);
+                List<RoleAssignment> list = system.getAssignmentManager().findByUser(user);
+                assertEquals(1, list.size());
+
+                Thread.sleep(2200);
+
+                assertDoesNotThrow(() -> {
+                    parser.parseAndExecute("assignment-extend", scanner, system);
+                });
+
+                parser.parseAndExecute("revoke-role", scanner, system);
+                list = system.getAssignmentManager().findByUser(user);
+                assertEquals(0, list.size());
+
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            } finally {
+                System.setIn(originalIn);
+            }
+        }
+
     }
 
     @Nested
