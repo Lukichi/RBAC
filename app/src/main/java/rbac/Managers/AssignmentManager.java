@@ -18,15 +18,18 @@ public class AssignmentManager implements Repository<RoleAssignment> {
             throw new IllegalArgumentException("RoleAssignment cannot be null");
         }
 
-        String key = item.assignmentId();
-        if (assigmentsData.containsKey(key)) {
-            throw new IllegalArgumentException("RoleAssignment with name '" + key + "' already create");
+        User user = item.user();
+        Role role = item.role();
+        List<RoleAssignment> assignmentList = findByUser(user);
+        for(RoleAssignment value : assignmentList) {
+            Role checkRole = value.role();
+            if (role.equals(checkRole)) {
+                System.out.println("RoleAssignment for user '" + user.fullName() + "' witch role '" + role.getName() + "' already have");
+            }
         }
 
+        String key = item.assignmentId();
         RoleAssignment previous = assigmentsData.putIfAbsent(key, item);
-        if (previous != null) {
-            throw new IllegalArgumentException("RoleAssignment with name '" + key + "' already create");
-        }
     }
 
     @Override

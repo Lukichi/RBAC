@@ -1,4 +1,4 @@
-package rbac.Components;
+package rbac.Managers;
 
 import java.util.List;
 import java.util.Optional;
